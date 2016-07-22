@@ -13,11 +13,18 @@ wurde.
 - Bereitstellung eines HTTP-Severs auf Port 80, welcher
   Temperatur, Luftfeuchtigkeit und Datum/Uhrzeit zurueckgibt
 
+## dht_telnet
+- alle 10s einen angeschlossenen DHTxx-Sensor auslesen
+- via Port 8266 (;-)) einen Telnet-Server bereitstellen, welcher
+  Status|Temperatur|Feuchtigkeit
+  sendet und dann die Verbindung beendet
 
 ## oled_ntp_clock
 - stuendlich aktuelle Zeit von einem NTP-Server holen
 - jede Sekunde Datum/Zeit auf einem OLED ausgeben
 
+## oled_ntp_clock_analog
+- oled_ntp_clock dito, nur zusätzlich mit analogen Ziffenblatt...
 
 ## weather_client
 Kommuniziert zyklisch mit einem Server (hier mein Wetter-Server;

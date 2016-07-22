@@ -8,7 +8,6 @@ node_gw    = "10.1.1.1"
 print("Connecting to wifi...")
 wifi.setmode(wifi.STATION)
 wifi.sta.config(ssid, pwd)
---wifi.sta.sethostname("dht")
 wifi.sta.setip({ip = node_ip, netmask = node_nm, gateway = node_gw})
 wifi.sta.connect()
 
@@ -19,7 +18,7 @@ tmr.alarm(0, 1000, 1, function()
         print(ip)
         tmr.stop(0)
         net.dns.setdnsserver(sec_dns, 1)
-		dofile("dht11.lua")
+		dofile("dht_telnet.lua")
     end
 end )
 

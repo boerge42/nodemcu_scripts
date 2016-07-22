@@ -106,7 +106,7 @@ end
 function init_i2c_display()
     i2c.setup(0, 4, 3, i2c.SLOW)
     disp = u8g.ssd1306_128x64_i2c(0x3c)
-	disp:setFont(u8g.font_profont22r)
+	disp:setFont(u8g.font_9x15)
 end
 
 
