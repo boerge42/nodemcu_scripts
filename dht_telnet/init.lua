@@ -1,5 +1,5 @@
-ssid       = "xxx"
-pwd        = "yyy"
+ssid       = "UWE_HOME1"
+pwd        = "u1504u1504"
 sec_dns    = "10.1.1.1"
 node_ip    = "10.1.1.44"
 node_nm    = "255.255.255.0"
