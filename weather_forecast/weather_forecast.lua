@@ -1,7 +1,7 @@
 -- **********************************************************************
 --   weather_forecast.lua
 --   ====================
---     Uwe Berger; 2106
+--     Uwe Berger; 2016
 --
 -- Wettervorhersage jede Stunde fuer woeid=xxx von Yahoo (im JSON-Format)
 -- holen und entsprechend auf einem OLED (128x64) anzeigen --> Anzeige 
