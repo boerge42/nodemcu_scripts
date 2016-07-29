@@ -31,6 +31,10 @@ Kommuniziert zyklisch mit einem Server (hier mein Wetter-Server;
 siehe beispielhaft enthaltenes Tcl-Script...;-)...) 
 und gibt die empfangenen Daten auf einem OLED aus.
 
+## weather_forecast
+Wettervorhersage jede Stunde fuer woeid=xxx von Yahoo (im JSON-Format)
+holen und entsprechend auf einem OLED (128x64) anzeigen --> Anzeige 
+automatisch alle 5s tageweise rollierend
 
 ## wifi_scanner
 - alle 3 Sekunden WLAN nach APs scannen und entsprechende Informationen
