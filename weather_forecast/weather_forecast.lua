@@ -16,9 +16,8 @@
 local woeid = 640720
 local url = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20%20weather.forecast%20where%20woeid%20%3D%20"..woeid.."%20and%20u%3D%20%22c%22&format=json"
 
-f = nil
-idx = 1
-
+local f = nil
+local idx = 1
 
 -- **********************************************************************
 function init_i2c_display()
@@ -47,19 +46,38 @@ function display_forecast()
             disp:drawStr(0, 25, ""..f[idx].date.."")
             disp:drawStr(0, 40, ""..f[idx].low.."/"..f[idx].high.."")
             disp:setFont(u8g.font_6x10)
-            if (string.len(f[idx].text)*9) < 128 then
-                disp:drawStr(0, 52, ""..f[idx].text.."")
-            else 
-                local s = split_str(f[idx].text, " ")
-                disp:drawStr(0, 52, ""..s[1].."")
-                disp:drawStr(0, 62, ""..s[2].."") 
+            -- Text eventuell auf mehrere Zeilen verteilen
+            s=split_str(f[idx].text, " ")
+            local x=0
+            local y=52
+            local i=1
+            for i=1, #s, 1 do
+                if (x+string.len(s[i])*6) < 128 then
+                    disp:drawStr(x, y, ""..s[i].."")
+                    x=x+(string.len(s[i])*6)+6
+                else
+                    x=0
+                    y=y+10
+                    disp:drawStr(x, y, ""..s[i].."")
+                end
+            end
+            -- Tagesposition in der Vorhersage anzeigen
+            local dx = 128/#f
+            x=dx/2
+            y=63
+            for i=1, #f, 1 do
+                if i == idx then
+                    disp:drawHLine(x-2, y, 5)
+                else 
+                    disp:drawHLine(x, y, 1)
+                end
+                x=x+dx
             end
         until disp:nextPage() == false
         idx = idx + 1
-        if idx > 10 then idx = 1 end
+        if idx > #f then idx = 1 end
     end
 end
-
 
 -- **********************************************************************
 function get_weather_forecast ()
@@ -69,13 +87,11 @@ function get_weather_forecast ()
         else
             local t = cjson.decode(data)
             f = t.query.results.channel.item.forecast
-            --for i=1, 10, 1 do
-            --    for k,v in pairs(f[i]) do print(k,v) end
-            --end
         end
     end)
 end
    
+
 -- *********************************************************************
 -- *********************************************************************
 -- *********************************************************************
