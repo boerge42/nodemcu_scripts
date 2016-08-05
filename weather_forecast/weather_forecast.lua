@@ -26,17 +26,6 @@ function init_i2c_display()
 end
 
 -- **********************************************************************
-function split_str(inputstr, sep)
-    if sep == nil then sep = "%s" end
-    local t={} ; i=1
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        t[i] = str
-        i = i + 1
-    end
-    return t
-end
-
--- **********************************************************************
 function display_forecast()
     if f ~= nil then
         disp:firstPage()
@@ -46,25 +35,16 @@ function display_forecast()
             disp:drawStr(0, 25, ""..f[idx].date.."")
             disp:drawStr(0, 40, ""..f[idx].low.."/"..f[idx].high.."")
             disp:setFont(u8g.font_6x10)
-            -- Text eventuell auf mehrere Zeilen verteilen
-            s=split_str(f[idx].text, " ")
-            local x=0
-            local y=52
-            local i=1
-            for i=1, #s, 1 do
-                if (x+string.len(s[i])*6) < 128 then
-                    disp:drawStr(x, y, ""..s[i].."")
-                    x=x+(string.len(s[i])*6)+6
-                else
-                    x=0
-                    y=y+10
-                    disp:drawStr(x, y, ""..s[i].."")
-                end
+            -- Text eventuell wortweise auf mehrere Zeilen verteilen
+            local x, y = 0, 52
+            for s in string.gmatch(f[idx].text, "%a+") do
+                if (x+string.len(s)*6) > 127 then x, y= 0, y+10 end
+                disp:drawStr(x, y, ""..s.."")
+                x=x+(string.len(s)*6)+6
             end
             -- Tagesposition in der Vorhersage anzeigen
             local dx = 128/#f
-            x=dx/2
-            y=63
+            x, y = dx/2, 63
             for i=1, #f, 1 do
                 if i == idx then
                     disp:drawHLine(x-2, y, 5)
