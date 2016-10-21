@@ -38,8 +38,8 @@ Eine Kombination aus:
 - dht_telnet
 
 Die Umschaltung zwischen den Betriebsarten erfolgt ueber zwei Taste. Spaetestens
-hier wird ein ESP8266-Modul mit mindestens 5 frei verfuegbaren I/O-Pins zur 
-Verfuegung stellt.
+hier wird ein ESP8266-Modul, welches mindestens 5 frei verfuegbaren I/O-Pins zur 
+Verfuegung stellt (z.B. ESP8266-12), erforderlich!
 
 ## weather_forecast
 Wettervorhersage jede Stunde fuer woeid=xxx von Yahoo (im JSON-Format)
