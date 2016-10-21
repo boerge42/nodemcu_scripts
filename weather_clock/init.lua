@@ -18,6 +18,6 @@ tmr.alarm(0, 1000, 1, function()
         print(ip)
         tmr.stop(0)
         net.dns.setdnsserver(sec_dns, 1)
-		-- dofile("weather_forecast.lua")
+		dofile("weather_clock.lc")
     end
 end )

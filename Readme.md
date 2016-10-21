@@ -3,8 +3,8 @@
 
 Hier sind einige Lua-Scripts für 
 [ESP8266-Wifi-Module](https://www.mikrocontroller.net/articles/ESP8266) 
-zu finden, auf denen die [NodeMCU-Firmware](http://nodemcu.com) installiert
-wurde.
+zu finden, auf denen die [NodeMCU-Firmware](https://github.com/nodemcu/nodemcu-firmware) installiert
+wurde...:
 
 
 ## dht11_ntp_http
@@ -31,6 +31,15 @@ Kommuniziert zyklisch mit einem Server (hier mein Wetter-Server;
 siehe beispielhaft enthaltenes Tcl-Script...;-)...) 
 und gibt die empfangenen Daten auf einem OLED aus.
 
+## weather_clock
+Eine Kombination aus:
+- oled_ntp_clock_analog
+- weather_forecast (zusaetzlich wird auch das aktuelle Wetter ausgewertet)
+- dht_telnet
+Die Umschaltung zwischen den Betriebsarten erfolgt ueber zwei Taste. Spaetestens
+hier wird ein ESP8266-Modul mit mindestens 5 frei verfuegbaren I/O-Pins zur 
+Verfuegung stellt.
+
 ## weather_forecast
 Wettervorhersage jede Stunde fuer woeid=xxx von Yahoo (im JSON-Format)
 holen und entsprechend auf einem OLED (128x64) anzeigen --> Anzeige 
@@ -41,5 +50,5 @@ automatisch alle 5s tageweise rollierend
   zu den gefundenen APs ausgeben
   
   
-  
+---------  
 Have fun!
