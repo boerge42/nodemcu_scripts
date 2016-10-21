@@ -37,9 +37,9 @@ Eine Kombination aus:
 - weather_forecast (zusaetzlich wird auch das aktuelle Wetter ausgewertet)
 - dht_telnet
 
-Die Umschaltung zwischen den Betriebsarten erfolgt ueber zwei Taste. Spaetestens
-hier wird ein ESP8266-Modul, welches mindestens 5 frei verfuegbaren I/O-Pins zur 
-Verfuegung stellt (z.B. ESP8266-12), erforderlich!
+Die Umschaltung zwischen den Betriebsarten/-anzeigen erfolgt ueber zwei Taster. Spaetestens
+hier wird ein ESP8266-Modul, welches mindestens 5 frei verfuegbare I/O-Pins zur 
+Verfuegung stellt (also z.B. ein ESP8266-12x), erforderlich!
 
 ## weather_forecast
 Wettervorhersage jede Stunde fuer woeid=xxx von Yahoo (im JSON-Format)
