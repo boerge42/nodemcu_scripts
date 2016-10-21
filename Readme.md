@@ -36,6 +36,7 @@ Eine Kombination aus:
 - oled_ntp_clock_analog
 - weather_forecast (zusaetzlich wird auch das aktuelle Wetter ausgewertet)
 - dht_telnet
+
 Die Umschaltung zwischen den Betriebsarten erfolgt ueber zwei Taste. Spaetestens
 hier wird ein ESP8266-Modul mit mindestens 5 frei verfuegbaren I/O-Pins zur 
 Verfuegung stellt.

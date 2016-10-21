@@ -5,8 +5,7 @@
 --
 -- * Zyklisch folgende Daten holen:
 --   * NTP-Zeit
---   * Wettervorhersage von Yahoo
---   * Daten von meinem Wetterserver :-)
+--   * aktuelle Wetterdaten und Wettervorhersage von Yahoo
 --   * Temperatur/Luftfeuchtigkeit von einem angeschlossenen DHT22
 -- * Anzeige der Daten auf einem OLED; umschaltbar mit 2 Tastern
 -- * Bereitstellung der DHT22-Werte auf TCP/IP-Port 8266
