@@ -5,7 +5,8 @@
 --
 -- * Zyklisch folgende Daten holen:
 --   * NTP-Zeit
---   * aktuelle Wetterdaten und Wettervorhersage von Yahoo
+--   * Wettervorhersage von Yahoo
+--   * Daten von meinem Wetterserver :-)
 --   * Temperatur/Luftfeuchtigkeit von einem angeschlossenen DHT22
 -- * Anzeige der Daten auf einem OLED; umschaltbar mit 2 Tastern
 -- * Bereitstellung der DHT22-Werte auf TCP/IP-Port 8266
@@ -18,10 +19,6 @@
 -- Zeitserver
 local ntp_server = "de.pool.ntp.org"
 
--- URL fuer Wettervorhersage von Yahoo
-local woeid = 640720
-local url = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20%20weather.forecast%20where%20woeid%20%3D%20"..woeid.."%20and%20u%3D%20%22c%22&format=json"
-
 -- Entprell-Pause Tasten (in ms)
 local debounce_delay = 30
 
@@ -33,7 +30,7 @@ local mode=1
 local data={
 	dht={temp_str="XXX", hum_str="YYY", ts="42", dht_stat="9"},
 	fc={f={}, idx=1},
-	con={}
+	lo={con={},	atm={},	wind={}, astro={}, idx=1}
 }
 
 -- **********************************************************************
@@ -79,19 +76,25 @@ end
 -- **********************************************************************
 -- Wettervorhersage holen
 local function get_weather_forecast ()
+	local woeid = 640720
+	-- Grad Celsius etc. kommt fehlerhaft, deshalb in angelsaechsischen Einheiten...
+	local url = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20%20weather.forecast%20where%20woeid%20%3D%20"..woeid.."&format=json"
+	local json_data
     http.get(url, nil, function(code, json_data)
         if (code < 0) then
             print("HTTP request failed")
         else
             local dd = cjson.decode(json_data)
-            pcall(function() data.fc.f = dd.query.results.channel.item.forecast end)
-            pcall(function() data.con  = dd.query.results.channel.item.condition end)
+            pcall(function() data.fc.f  = dd.query.results.channel.item.forecast end)
+            pcall(function() data.lo.con   = dd.query.results.channel.item.condition end)
+            pcall(function() data.lo.atm   = dd.query.results.channel.atmosphere end)
+            pcall(function() data.lo.wind  = dd.query.results.channel.wind end)
+            pcall(function() data.lo.astro = dd.query.results.channel.astronomy end)
         end
     end)
 end
 
 -- **********************************************************************
--- alle Werte aktualisieren
 local function update_values()
     counter=counter+1
     -- alle 2s
@@ -100,7 +103,7 @@ local function update_values()
     end
     -- alle 1min
     if (counter%60)==0 then
-        --collectgarbage()    
+    	-- ...:-)
     end
     -- alle 15min
     if (counter%900)==0 then
@@ -109,16 +112,20 @@ local function update_values()
     -- alle 1h
     if (counter%3600)==0 then
         read_ntp()
-        --counter=0
+        counter=0
     end
 end
 
 -- **********************************************************************
--- entsprechenden Bildschirm laden und zyklisch ausfuehren
 local function switch_display(i)
-	oled=nil
-	collectgarbage()
-	local cycle = 1000
+	local oled
+	-- ...vorherigen Bildschirm "entladen" (und Speicher freigeben)
+	package.loaded.display_clock = nil
+	package.loaded.display_forecast = nil
+	package.loaded.display_current = nil
+	package.loaded.display_dht = nil
+	-- Aktualisierungzyklus setzen und entspr. Bildschirm laden
+	local cycle
 	if mode==1 then 
 		cycle=1000
 		oled=require "display_clock"
@@ -165,9 +172,9 @@ function switch6down()
 											if (mode==2) then
 												data.fc.idx=data.fc.idx+1
 												if data.fc.idx > #data.fc.f then data.fc.idx=1 end
-											else
-												mode=2
-												data.fc.idx=1
+											elseif (mode==3) then
+												data.lo.idx=data.lo.idx+1
+												if data.lo.idx > 4 then data.lo.idx=1 end
 											end
 											switch_display(mode)
 										end

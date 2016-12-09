@@ -33,7 +33,7 @@ function M.display(d)
            disp:setFont(u8g.font_6x10)
            disp:drawStr(50, 20, ""..d.fc.f[d.fc.idx].date.."")
            disp:setFont(u8g.font_9x15)
-           disp:drawStr(50, 36, ""..d.fc.f[d.fc.idx].low.."/"..d.fc.f[d.fc.idx].high..string.char(0xB0).."C")
+           disp:drawStr(50, 36, ""..f2c(d.fc.f[d.fc.idx].low).."/"..f2c(d.fc.f[d.fc.idx].high)..string.char(0xB0).."C")
            disp:setFont(u8g.font_6x10)
            -- Text eventuell wortweise auf mehrere Zeilen verteilen
            local x, y= 50, 49

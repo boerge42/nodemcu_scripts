@@ -1,0 +1,392 @@
+{"query":
+	{"count":1,
+	 "created":"2016-11-25T21:23:23Z",
+	 "lang":"de",
+	 "results":
+		{"channel":
+			{"units":{"distance":"km","pressure":"mb","speed":"km/h","temperature":"C"},
+			"title":"Yahoo! Weather - Brandenburg, BB, DE","link":"http://us.rd.yahoo.com/dailynews/rss/weather/Country__Country/*https://weather.yahoo.com/country/state/city-640720/","description":"Yahoo! Weather for Brandenburg, BB, DE","language":"en-us","lastBuildDate":"Fri, 25 Nov 2016 10:23 PM CET","ttl":"60",
+			"location":{"city":"Brandenburg","country":"Germany","region":" BB"},
+			"wind":{"chill":"34","direction":"90","speed":"6.44"},
+			"atmosphere":{"humidity":"93","pressure":"34541.18","rising":"0","visibility":"21.24"},
+			"astronomy":{"sunrise":"7:51 am","sunset":"4:3 pm"},
+			"image":{"title":"Yahoo! Weather","width":"142","height":"18","link":"http://weather.yahoo.com","url":"http://l.yimg.com/a/i/brand/purplelogo//uh/us/news-wea.gif"},
+			"item":{"title":"Conditions for Brandenburg, BB, DE at 09:00 PM CET","lat":"52.408489","long":"12.56256","link":"http://us.rd.yahoo.com/dailynews/rss/weather/Country__Country/*https://weather.yahoo.com/country/state/city-640720/","pubDate":"Fri, 25 Nov 2016 09:00 PM CET",
+					"condition":{"code":"26","date":"Fri, 25 Nov 2016 09:00 PM CET","temp":"1","text":"Cloudy"},
+				 	"forecast":[{"code":"26","date":"25 Nov 2016","day":"Fri","high":"3","low":"0","text":"Cloudy"},{"code":"26","date":"26 Nov 2016","day":"Sat","high":"3","low":"0","text":"Cloudy"},{"code":"30","date":"27 Nov 2016","day":"Sun","high":"6","low":"1","text":"Partly Cloudy"},{"code":"32","date":"28 Nov 2016","day":"Mon","high":"2","low":"-1","text":"Sunny"},{"code":"30","date":"29 Nov 2016","day":"Tue","high":"2","low":"-2","text":"Partly Cloudy"},{"code":"28","date":"30 Nov 2016","day":"Wed","high":"3","low":"-1","text":"Mostly Cloudy"},{"code":"12","date":"01 Dec 2016","day":"Thu","high":"5","low":"2","text":"Rain"},{"code":"39","date":"02 Dec 2016","day":"Fri","high":"6","low":"4","text":"Scattered Showers"},{"code":"39","date":"03 Dec 2016","day":"Sat","high":"4","low":"1","text":"Scattered Showers"},{"code":"28","date":"04 Dec 2016","day":"Sun","high":"5","low":"1","text":"Mostly Cloudy"}],
+				 	"description":"<![CDATA[<img src=\"http://l.yimg.com/a/i/us/we/52/26.gif\"/>\n<BR />\n<b>Current Conditions:</b>\n<BR />Cloudy\n<BR />\n<BR />\n<b>Forecast:</b>\n<BR /> Fri - Cloudy. High: 3Low: 0\n<BR /> Sat - Cloudy. High: 3Low: 0\n<BR /> Sun - Partly Cloudy. High: 6Low: 1\n<BR /> Mon - Sunny. High: 2Low: -1\n<BR /> Tue - Partly Cloudy. High: 2Low: -2\n<BR />\n<BR />\n<a href=\"http://us.rd.yahoo.com/dailynews/rss/weather/Country__Country/*https://weather.yahoo.com/country/state/city-640720/\">Full Forecast at Yahoo! Weather</a>\n<BR />\n<BR />\n(provided by <a href=\"http://www.weather.com\" >The Weather Channel</a>)\n<BR />\n]]>",
+				 	"guid":{"isPermaLink":"false"}
+				}
+			}
+		}
+	}
+}
+
+
+=======================================================================
+select * from weather.forecast where woeid = 640720
+
+https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20%3D%20640720&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+
+{
+ "query": {
+  "count": 1,
+  "created": "2016-12-07T05:50:23Z",
+  "lang": "de",
+  "results": {
+   "channel": {
+    "units": {
+     "distance": "mi",
+     "pressure": "in",
+     "speed": "mph",
+     "temperature": "F"
+    },
+    "title": "Yahoo! Weather - Brandenburg, BB, DE",
+    "link": "http://us.rd.yahoo.com/dailynews/rss/weather/Country__Country/*https://weather.yahoo.com/country/state/city-640720/",
+    "description": "Yahoo! Weather for Brandenburg, BB, DE",
+    "language": "en-us",
+    "lastBuildDate": "Wed, 07 Dec 2016 06:50 AM CET",
+    "ttl": "60",
+    "location": {
+     "city": "Brandenburg",
+     "country": "Germany",
+     "region": " BB"
+    },
+    "wind": {
+     "chill": "25",
+     "direction": "160",
+     "speed": "11"
+    },
+    "atmosphere": {
+     "humidity": "98",
+     "pressure": "1029.0",
+     "rising": "0",
+     "visibility": "7.3"
+    },
+    "astronomy": {
+     "sunrise": "8:7 am",
+     "sunset": "3:56 pm"
+    },
+    "image": {
+     "title": "Yahoo! Weather",
+     "width": "142",
+     "height": "18",
+     "link": "http://weather.yahoo.com",
+     "url": "http://l.yimg.com/a/i/brand/purplelogo//uh/us/news-wea.gif"
+    },
+    "item": {
+     "title": "Conditions for Brandenburg, BB, DE at 06:00 AM CET",
+     "lat": "52.408489",
+     "long": "12.56256",
+     "link": "http://us.rd.yahoo.com/dailynews/rss/weather/Country__Country/*https://weather.yahoo.com/country/state/city-640720/",
+     "pubDate": "Wed, 07 Dec 2016 06:00 AM CET",
+     "condition": {
+      "code": "26",
+      "date": "Wed, 07 Dec 2016 06:00 AM CET",
+      "temp": "31",
+      "text": "Cloudy"
+     },
+     "forecast": [
+      {
+       "code": "26",
+       "date": "07 Dec 2016",
+       "day": "Wed",
+       "high": "40",
+       "low": "28",
+       "text": "Cloudy"
+      },
+      {
+       "code": "26",
+       "date": "08 Dec 2016",
+       "day": "Thu",
+       "high": "47",
+       "low": "40",
+       "text": "Cloudy"
+      },
+      {
+       "code": "26",
+       "date": "09 Dec 2016",
+       "day": "Fri",
+       "high": "46",
+       "low": "41",
+       "text": "Cloudy"
+      },
+      {
+       "code": "26",
+       "date": "10 Dec 2016",
+       "day": "Sat",
+       "high": "47",
+       "low": "42",
+       "text": "Cloudy"
+      },
+      {
+       "code": "39",
+       "date": "11 Dec 2016",
+       "day": "Sun",
+       "high": "46",
+       "low": "42",
+       "text": "Scattered Showers"
+      },
+      {
+       "code": "28",
+       "date": "12 Dec 2016",
+       "day": "Mon",
+       "high": "41",
+       "low": "33",
+       "text": "Mostly Cloudy"
+      },
+      {
+       "code": "30",
+       "date": "13 Dec 2016",
+       "day": "Tue",
+       "high": "35",
+       "low": "29",
+       "text": "Partly Cloudy"
+      },
+      {
+       "code": "30",
+       "date": "14 Dec 2016",
+       "day": "Wed",
+       "high": "36",
+       "low": "29",
+       "text": "Partly Cloudy"
+      },
+      {
+       "code": "30",
+       "date": "15 Dec 2016",
+       "day": "Thu",
+       "high": "36",
+       "low": "30",
+       "text": "Partly Cloudy"
+      },
+      {
+       "code": "30",
+       "date": "16 Dec 2016",
+       "day": "Fri",
+       "high": "35",
+       "low": "29",
+       "text": "Partly Cloudy"
+      }
+     ],
+     "description": "<![CDATA[<img src=\"http://l.yimg.com/a/i/us/we/52/26.gif\"/>\n<BR />\n<b>Current Conditions:</b>\n<BR />Cloudy\n<BR />\n<BR />\n<b>Forecast:</b>\n<BR /> Wed - Cloudy. High: 40Low: 28\n<BR /> Thu - Cloudy. High: 47Low: 40\n<BR /> Fri - Cloudy. High: 46Low: 41\n<BR /> Sat - Cloudy. High: 47Low: 42\n<BR /> Sun - Scattered Showers. High: 46Low: 42\n<BR />\n<BR />\n<a href=\"http://us.rd.yahoo.com/dailynews/rss/weather/Country__Country/*https://weather.yahoo.com/country/state/city-640720/\">Full Forecast at Yahoo! Weather</a>\n<BR />\n<BR />\n(provided by <a href=\"http://www.weather.com\" >The Weather Channel</a>)\n<BR />\n]]>",
+     "guid": {
+      "isPermaLink": "false"
+     }
+    }
+   }
+  }
+ }
+}
+
+========================================================================
+
+select item.condition from weather.forecast where woeid = 640720
+
+https://query.yahooapis.com/v1/public/yql?q=select%20item.condition%20from%20weather.forecast%20where%20woeid%20%3D%20640720&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+
+{
+ "query": {
+  "count": 1,
+  "created": "2016-12-07T05:52:55Z",
+  "lang": "de",
+  "results": {
+   "channel": {
+    "item": {
+     "condition": {
+      "code": "26",
+      "date": "Wed, 07 Dec 2016 06:00 AM CET",
+      "temp": "31",
+      "text": "Cloudy"
+     }
+    }
+   }
+  }
+ }
+}
+
+=======================================================================
+
+select wind from weather.forecast where woeid = 640720
+
+https://query.yahooapis.com/v1/public/yql?q=select%20wind%20from%20weather.forecast%20where%20woeid%20%3D%20640720&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+
+{
+ "query": {
+  "count": 1,
+  "created": "2016-12-07T05:54:19Z",
+  "lang": "de",
+  "results": {
+   "channel": {
+    "wind": {
+     "chill": "25",
+     "direction": "160",
+     "speed": "11"
+    }
+   }
+  }
+ }
+}
+
+=======================================================================
+
+select atmosphere from weather.forecast where woeid = 640720
+
+https://query.yahooapis.com/v1/public/yql?q=select%20atmosphere%20from%20weather.forecast%20where%20woeid%20%3D%20640720&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+
+{
+ "query": {
+  "count": 1,
+  "created": "2016-12-07T05:55:10Z",
+  "lang": "de",
+  "results": {
+   "channel": {
+    "atmosphere": {
+     "humidity": "98",
+     "pressure": "1029.0",
+     "rising": "0",
+     "visibility": "7.3"
+    }
+   }
+  }
+ }
+}
+
+
+=======================================================================
+
+select astronomy from weather.forecast where woeid = 640720
+
+https://query.yahooapis.com/v1/public/yql?q=select%20astronomy%20from%20weather.forecast%20where%20woeid%20%3D%20640720&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+
+{
+ "query": {
+  "count": 1,
+  "created": "2016-12-07T05:56:04Z",
+  "lang": "de",
+  "results": {
+   "channel": {
+    "astronomy": {
+     "sunrise": "8:7 am",
+     "sunset": "3:56 pm"
+    }
+   }
+  }
+ }
+}
+
+=======================================================================
+
+select item from weather.forecast where woeid = 640720
+
+https://query.yahooapis.com/v1/public/yql?q=select%20item%20from%20weather.forecast%20where%20woeid%20%3D%20640720&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+
+{
+ "query": {
+  "count": 1,
+  "created": "2016-12-07T05:59:20Z",
+  "lang": "de",
+  "results": {
+   "channel": {
+    "item": {
+     "title": "Conditions for Brandenburg, BB, DE at 06:00 AM CET",
+     "lat": "52.408489",
+     "long": "12.56256",
+     "link": "http://us.rd.yahoo.com/dailynews/rss/weather/Country__Country/*https://weather.yahoo.com/country/state/city-640720/",
+     "pubDate": "Wed, 07 Dec 2016 06:00 AM CET",
+     "condition": {
+      "code": "26",
+      "date": "Wed, 07 Dec 2016 06:00 AM CET",
+      "temp": "31",
+      "text": "Cloudy"
+     },
+     "forecast": [
+      {
+       "code": "26",
+       "date": "07 Dec 2016",
+       "day": "Wed",
+       "high": "40",
+       "low": "28",
+       "text": "Cloudy"
+      },
+      {
+       "code": "26",
+       "date": "08 Dec 2016",
+       "day": "Thu",
+       "high": "47",
+       "low": "40",
+       "text": "Cloudy"
+      },
+      {
+       "code": "26",
+       "date": "09 Dec 2016",
+       "day": "Fri",
+       "high": "46",
+       "low": "41",
+       "text": "Cloudy"
+      },
+      {
+       "code": "26",
+       "date": "10 Dec 2016",
+       "day": "Sat",
+       "high": "47",
+       "low": "42",
+       "text": "Cloudy"
+      },
+      {
+       "code": "39",
+       "date": "11 Dec 2016",
+       "day": "Sun",
+       "high": "46",
+       "low": "42",
+       "text": "Scattered Showers"
+      },
+      {
+       "code": "28",
+       "date": "12 Dec 2016",
+       "day": "Mon",
+       "high": "41",
+       "low": "33",
+       "text": "Mostly Cloudy"
+      },
+      {
+       "code": "30",
+       "date": "13 Dec 2016",
+       "day": "Tue",
+       "high": "35",
+       "low": "29",
+       "text": "Partly Cloudy"
+      },
+      {
+       "code": "30",
+       "date": "14 Dec 2016",
+       "day": "Wed",
+       "high": "36",
+       "low": "29",
+       "text": "Partly Cloudy"
+      },
+      {
+       "code": "30",
+       "date": "15 Dec 2016",
+       "day": "Thu",
+       "high": "36",
+       "low": "30",
+       "text": "Partly Cloudy"
+      },
+      {
+       "code": "30",
+       "date": "16 Dec 2016",
+       "day": "Fri",
+       "high": "35",
+       "low": "29",
+       "text": "Partly Cloudy"
+      }
+     ],
+     "description": "<![CDATA[<img src=\"http://l.yimg.com/a/i/us/we/52/26.gif\"/>\n<BR />\n<b>Current Conditions:</b>\n<BR />Cloudy\n<BR />\n<BR />\n<b>Forecast:</b>\n<BR /> Wed - Cloudy. High: 40Low: 28\n<BR /> Thu - Cloudy. High: 47Low: 40\n<BR /> Fri - Cloudy. High: 46Low: 41\n<BR /> Sat - Cloudy. High: 47Low: 42\n<BR /> Sun - Scattered Showers. High: 46Low: 42\n<BR />\n<BR />\n<a href=\"http://us.rd.yahoo.com/dailynews/rss/weather/Country__Country/*https://weather.yahoo.com/country/state/city-640720/\">Full Forecast at Yahoo! Weather</a>\n<BR />\n<BR />\n(provided by <a href=\"http://www.weather.com\" >The Weather Channel</a>)\n<BR />\n]]>",
+     "guid": {
+      "isPermaLink": "false"
+     }
+    }
+   }
+  }
+ }
+}
