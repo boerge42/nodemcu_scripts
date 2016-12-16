@@ -58,7 +58,7 @@ function M.display(d)
         disp:firstPage()
         repeat
 			disp:setFont(u8g.font_9x15)
-            disp:drawStr(10, 30, "No Data!")        
+            disp:drawStr(10, 30, "No data!")        
         until disp:nextPage() == false
     end
 end

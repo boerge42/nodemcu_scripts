@@ -62,6 +62,7 @@ local function read_ntp()
     end) 
 end
 
+
 -- **********************************************************************
 -- DHT auslesen
 local function read_dht()
@@ -101,9 +102,9 @@ local function update_values()
     if (counter%2)==0 then
         read_dht()
     end
-    -- alle 1min
-    if (counter%60)==0 then
-    	-- ...:-)
+    -- alle 3min
+    if (counter%180)==0 then
+--    	get_my_weather()
     end
     -- alle 15min
     if (counter%900)==0 then
@@ -112,7 +113,7 @@ local function update_values()
     -- alle 1h
     if (counter%3600)==0 then
         read_ntp()
-        counter=0
+        --counter=0
     end
 end
 
