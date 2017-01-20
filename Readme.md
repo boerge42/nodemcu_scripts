@@ -41,6 +41,18 @@ Die Umschaltung zwischen den Betriebsarten/-anzeigen erfolgt ueber zwei Taster. 
 hier wird ein ESP8266-Modul, welches mindestens 5 frei verfuegbare I/O-Pins zur 
 Verfuegung stellt (also z.B. ein ESP8266-12x), erforderlich!
 
+## weather_clock_my_server
+Eine Kombination aus:
+- oled_ntp_clock_analog
+- weather_forecast
+- weather_client
+- dht_telnet
+
+Die Umschaltung zwischen den Betriebsarten/-anzeigen erfolgt ueber zwei Taster. Auch 
+hier wird ein ESP8266-Modul, welches mindestens 5 frei verfuegbare I/O-Pins zur 
+Verfuegung stellt (also z.B. ein ESP8266-12x), erforderlich! 
+Ansonsten RTFM und/oder den Quell-Code ansehen und verstehen!
+
 ## weather_forecast
 Wettervorhersage jede Stunde fuer woeid=xxx von Yahoo (im JSON-Format)
 holen und entsprechend auf einem OLED (128x64) anzeigen --> Anzeige 
