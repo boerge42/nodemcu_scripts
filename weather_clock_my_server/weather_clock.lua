@@ -123,13 +123,16 @@ local function update_values()
     -- alle 2s
     if (counter%2)==0 then
         read_dht()
+        if ((data.fc_count == 0) or (data.co_ok == 0)) then
+        	request_weather_svr()
+        end
     end
-    -- alle 2min
-    if (counter%120)==0 then
+    -- alle 5min - 1s
+    if (counter%299)==0 then
     	request_weather_svr()
     end
-    -- alle 1h
-    if (counter%3600)==0 then
+    -- alle 1h + 3s
+    if (counter%3603)==0 then
         read_ntp()
     end
 end
@@ -229,7 +232,7 @@ disp = u8g.ssd1306_128x64_i2c(0x3c)
 -- alle Werte einmal holen und Update-Timer starten
 read_dht()
 read_ntp()
-request_weather_svr()
+--request_weather_svr()
 tmr.alarm(1, 1000, 1, function() update_values() end)
 
 -- Bildschirmanzeige...
