@@ -15,9 +15,6 @@
 --
 -- **********************************************************
 
--- Zeitserver
-local ntp_server = "de.pool.ntp.org"
-
 -- Entprell-Pause Tasten (in ms)
 local debounce_delay = 30
 
@@ -55,7 +52,7 @@ end
 -- momentane UNIX-Sekunde von einem NTP-Server holen und internen 
 -- Zeitzaehler mit Ergebnis abgleichen
 local function read_ntp()
-    net.dns.resolve(ntp_server, function(sk, ip)
+    net.dns.resolve("de.pool.ntp.org", function(sk, ip)
     if (ip == nil) then print("DNS failed!") else
         sntp.sync(ip,
             function(sec,usec,server)
@@ -73,12 +70,10 @@ end
 -- meinen Wetterserver auslesen
 local function request_weather_svr ()
 	
-	local weather_svr_ip   = "10.1.1.82"
-	local weather_svr_port = 12342
-	local reslist
-	local res 
     local conn=net.createConnection(net.TCP, 0)
     conn:on("receive", function(conn, c)
+					    	local reslist
+							local res 
     						res=trim(c)
                             --print("\nreceive..."..res.."")
                             reslist = split_str(res, "@")
@@ -101,7 +96,7 @@ local function request_weather_svr ()
     						data.cu_ok = 0
                             conn:send("get_weather_all\n")
                           end)
-    conn:connect(weather_svr_port, weather_svr_ip)
+    conn:connect(12342, "10.1.1.82")
 
 end
 
@@ -109,10 +104,12 @@ end
 -- DHT auslesen
 local function read_dht()
     local dht_stat, dht_temp, dht_hum, dht_temp_dec, dht_hum_dec = dht.read(1)
-    data.dht.temp_str=""..dht_temp.."."..(dht_temp_dec/100)..""
-    data.dht.hum_str=""..dht_hum.."."..(dht_hum_dec/100)..""
-    data.dht.ts = rtctime.get()
-    data.dht.dht_stat=dht_stat
+    if dht_stat == dht.OK then
+    	data.dht.temp_str=""..dht_temp.."."..(dht_temp_dec/100)..""
+    	data.dht.hum_str=""..dht_hum.."."..(dht_hum_dec/100)..""
+    	data.dht.ts = rtctime.get()
+    	data.dht.dht_stat=dht_stat
+    end
 end
 
 
@@ -241,8 +238,7 @@ switch_display(mode)
 -- Telnet-Server auf Port 8266...
 local srv=net.createServer(net.TCP) 
 srv:listen(8266,function(svr_conn) 
-        local buf="ts="..data.dht.ts.."|stat="..data.dht.dht_stat.."|temp="..data.dht.temp_str.."|hum="..data.dht.hum_str.."|heap="..node.heap().."|count="..counter..""
-        svr_conn:send(buf)
+        svr_conn:send("ts="..data.dht.ts.."|stat="..data.dht.dht_stat.."|temp="..data.dht.temp_str.."|hum="..data.dht.hum_str.."|heap="..node.heap().."|count="..counter.."")
         svr_conn:close()
         --print("--> send\n")
         buf=nil
