@@ -1,8 +1,8 @@
 # nodemcu-Script-Sammlung
-(Uwe Berger, 2016)
+(Uwe Berger; 2016, 2017)
 
-Hier sind einige Lua-Scripts für 
-[ESP8266-Wifi-Module](https://www.mikrocontroller.net/articles/ESP8266) 
+Hier sind einige (beispielhafte) Lua-Scripts für 
+[ESP8266-Wifi-Module](http://bralug.de/wiki/ESP8266_mit_NodeMcu) 
 zu finden, auf denen die [NodeMCU-Firmware](https://github.com/nodemcu/nodemcu-firmware) installiert
 wurde...:
 
@@ -61,6 +61,10 @@ automatisch alle 5s tageweise rollierend
 ## wifi_scanner
 - alle 3 Sekunden WLAN nach APs scannen und entsprechende Informationen
   zu den gefundenen APs ausgeben
+  
+## mqtt_client
+Analog dht_telnet. Zusaetzlich werden die Werte zu einem MQTT-Broker
+publiziert.
   
   
 ---------  

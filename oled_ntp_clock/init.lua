@@ -1,7 +1,7 @@
-ssid       = "xxxx"
-pwd        = "yyyy"
+ssid       = "xxx"
+pwd        = "yyy"
 sec_dns    = "10.1.1.1"
-node_ip    = "10.1.1.43"
+node_ip    = "10.1.1.45"
 node_nm    = "255.255.255.0"
 node_gw    = "10.1.1.1"
 
