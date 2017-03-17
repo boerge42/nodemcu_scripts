@@ -6,14 +6,22 @@
 --
 -- * alle Stunde RTC via NTP synchronisieren
 -- * Telnet-Server an Port 8266 bereitstellen, welcher
---   "ts=UNIX-Zeit|stat=Status|temp=Temperatur|Hum=Luftfeuchtigkeit"
+--   "ts=UNIX-Zeit|stat=Status|temp=Temperatur|Hum=Luftfeuchtigkeit|heap=freier dyn. Speicher"
 --   sendet und dann die Verbindung beendet
--- * zyklisch jede Minute an einen MQTT-Broker folgendes publizieren:
---   ** sensors/<wifi.sta.gethostname()>/ts ...
---   ** sensors/<wifi.sta.gethostname()>/temperature ...
---   ** sensors/<wifi.sta.gethostname()>/humidity ...
---   ** sensors/<wifi.sta.gethostname()>/heap ...
---   ** sensors/<wifi.sta.gethostname()>/readable_timestamp ...
+-- * Nachrichten an einen MQTT-Broker senden:
+--   ** ohne Anmeldung und unverschluesselt 
+--   ** Sensorstatus via Topic sensors/<wifi.sta.gethostname()>/status
+--      *** on  --> Sensor ist aktiv
+--      *** off --> Sensor ist nicht aktiv --> wird als MQTT-Testament 
+--                  bei Start des Sensors gesetzt
+--   ** zyklisch jede Minute an einen MQTT-Broker folgendes publizieren:
+--      *** sensors/<wifi.sta.gethostname()>/ts ...
+--      *** sensors/<wifi.sta.gethostname()>/temperature ...
+--      *** sensors/<wifi.sta.gethostname()>/humidity ...
+--      *** sensors/<wifi.sta.gethostname()>/heap ...
+--      *** sensors/<wifi.sta.gethostname()>/readable_timestamp ...
+--   ** saemtliche MQTT-Telegramme werden mit gesetztem Retain-Flag 
+--      an den Broker gesendet
 --
 -- ---------
 -- Have fun!
@@ -21,16 +29,13 @@
 -- **********************************************************
 
 dht_pin  = 4
+ts, stat, temp, hum = 0, -1, "xx", "xx"
+
 ntp_server = "de.pool.ntp.org"
 
 mqtt_broker = "10.1.1.82"
 client_name = wifi.sta.gethostname()
 mqtt_topic = "sensors/"..client_name.."/"
-
-ts 	 = 42
-temp = 42
-hum  = 42
-
 
 -- **********************************************************************
 -- Sommerzeit?
@@ -56,23 +61,24 @@ function is_summertime(ts)
 		end
 		return prev_sunday < 24
 	end
-	assert(false)
 end
 
 -- **********************************************************************
--- UNIX-Sekunde in lokale Zeit umrechnen und in "lesbaren" String 
+-- UNIX-Sekunde in lokale Zeit umrechnen und in "lesbaren" String umwandeln
 function get_readable_local_datetime(tz_offset, dst)
 	-- UTC
-	ut = rtctime.get()
-    tm = rtctime.epoch2cal(ut)
+	local utc = rtctime.get()
+    local tm  = rtctime.epoch2cal(utc)
     -- Sommerzeit?
     if dst == true and is_summertime(tm) then
-    	ut = ut + 3600
+    	utc = utc + 3600
     end
     -- Zeitzone noch einrechnen
-    tm = rtctime.epoch2cal(ut + tz_offset * 3600)
+    tm = rtctime.epoch2cal(utc + tz_offset * 3600)
     -- Ergebnis in String umwandeln
-    return string.format("%04d/%02d/%02d %02d:%02d:%02d", tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"])
+    return string.format("%04d/%02d/%02d %02d:%02d:%02d", 
+                         tm["year"], tm["mon"], tm["day"], 
+                         tm["hour"], tm["min"], tm["sec"])
 end
 
 -- **********************************************************************
@@ -85,6 +91,17 @@ function read_values()
 	end
 	ts = rtctime.get()
 end
+
+-- **********************************************************************
+-- Messwerte via MQTT publizieren
+function publish_values()
+	m:publish(mqtt_topic.."heap", node.heap(), 0, 1)
+	m:publish(mqtt_topic.."temperature", temp, 0, 1)
+	m:publish(mqtt_topic.."humidity", hum, 0, 1)
+	m:publish(mqtt_topic.."unixtime", ts, 0, 1)
+	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(1, true), 0, 1)
+end
+
 
 -- **********************************************************************
 -- momentane UNIX-Sekunde von einem NTP-Server holen und RTC setzen
@@ -103,6 +120,7 @@ function read_ntp()
     end) 
 end
 
+
 -- **********************************************************************
 -- **********************************************************************
 -- **********************************************************************
@@ -111,24 +129,26 @@ end
 read_ntp()
 tmr.alarm(1, 3600000, 1, function() read_ntp() end)
 
--- mit MQTT-broker verbinden
+-- mit MQTT-Client definieren
 m = mqtt.Client(client_name, 120)
-m:on("connect", function(con) print ("MQTT-Broker connected") end)
-m:on("offline", function(con) print ("MQTT-Broker offline") end)
+
+-- MQTT-Testament dieses Sensors festlegen...
+m:lwt(mqtt_topic.."status", "off", 0, 1)
+
+-- mit MQTT-broker verbinden
 m:connect("10.1.1.82", 1883, 0, 0,
+		-- Verbindung mit MQTT-Broker hergestellt
 		function(conn) 
 			print("connected!")
+			-- Sensor online melden
+			m:publish(mqtt_topic.."status", "on", 0, 1)
 			-- jede Minute Messwerte via MQTT publizieren
 			tmr.alarm(0,60000,1, function() 
 									read_values()
-									print(ts, client_name)
-									m:publish(mqtt_topic.."heap", node.heap(), 0, 1)
-									m:publish(mqtt_topic.."temperature", temp, 0, 1)
-									m:publish(mqtt_topic.."humidity", hum, 0, 1)
-									m:publish(mqtt_topic.."unixtime", ts, 0, 1)
-									m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(1, true), 0, 1)
+									publish_values()
 								end) 
 		end,
+		-- keine Verbindung mit MQTT-Broker zustande gekommen
 		function(conn, reason)
 			print("MQTT-Connect failed: "..reason)
 		end
