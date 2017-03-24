@@ -42,7 +42,7 @@ idx = 1
 
 -- **********************************************************************
 function display()
-	-- sind ueberhaupt Daten zum anzeugen da?
+	-- sind ueberhaupt Daten zum anzeigen da?
 	if #nodes < 1 then return end
 	disp:firstPage()
 	repeat
@@ -81,9 +81,8 @@ function fill_lists(topic, data)
 		end
 		-- es sollten 3 Listenelemte entstanden sein (siehe oben)
 		if #ts == 3 then
-			-- wenn dieses Node noch nicht bekannt, dann Liste initialisieren
+			-- wenn dieses Node noch nicht bekannt, dann Listen initialisieren
 			if sensors[ts[2]] == nil then
-				--nodes[#nodes+1]=ts[2]
 				table.insert(nodes, ts[2])
 				sensors[ts[2]]={}
 			end
@@ -92,7 +91,6 @@ function fill_lists(topic, data)
 		end
 	end
 end
-
 
 -- **********************************************************************
 -- **********************************************************************
@@ -117,9 +115,7 @@ m:connect(mqtt_broker, mqtt_port, 0, 0,
 		function(conn) 
 			print("connected!")
 			-- Topic abonnieren
-			m:subscribe(mqtt_topic, 0,	function(client) 
-											print("subscribe success") 
-										end)
+			m:subscribe(mqtt_topic, 0, function(client) print("subscribe success") end)
 		end,
 		-- keine Verbindung mit MQTT-Broker zustande gekommen
 		function(conn, reason)
