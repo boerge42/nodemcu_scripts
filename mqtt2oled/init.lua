@@ -14,7 +14,7 @@ tmr.alarm(0, 1000, 1, function()
     if ( ( ip ~= nil ) and  ( ip ~= "0.0.0.0" ) and (wifi.sta.status() == 5))then
         print("IP/Name: "..ip.." / "..wifi.sta.gethostname())
         tmr.stop(0)
-		dofile("dht2mqtt.lua")
+		dofile("mqtt2oled.lc")
     end
 end )
 

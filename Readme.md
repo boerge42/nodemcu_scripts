@@ -65,6 +65,10 @@ automatisch alle 5s tageweise rollierend
 ## mqtt_client
 Analog dht_telnet. Zusaetzlich werden die Werte zu einem MQTT-Broker
 publiziert.
+
+## mqtt2oled
+Anzeige der MQTT-Messages auf einem OLED, welche alle im Netz vorhandenen
+mqtt-clients publizieren.
   
   
 ---------  
