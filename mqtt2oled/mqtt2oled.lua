@@ -47,7 +47,12 @@ function display()
 	disp:firstPage()
 	repeat
 		disp:setFont(u8g.font_6x10)
-		disp:drawStr(0, 7, nodes[idx])
+		-- eventuell Alias ausgeben
+		if nodenames[nodes[idx]]~= nil then
+			disp:drawStr(0, 7, nodenames[nodes[idx]])
+		else
+			disp:drawStr(0, 7, nodes[idx])		
+		end
 		disp:drawStr(0, 17, sensors[nodes[idx]]["status"].." ("..sensors[nodes[idx]]["heap"].."Byte)")
 		disp:drawStr(0, 27, sensors[nodes[idx]]["readable_timestamp"])
 		disp:setFont(u8g.font_9x15)
@@ -123,4 +128,21 @@ m:connect(mqtt_broker, mqtt_port, 0, 0,
 		end
 )
 
+-- alle 5 Sekunde weiterschalten
 tmr.alarm(0, 5000, 1, function() display() end)
+
+-- Ego
+disp:firstPage()
+repeat
+		disp:setFont(u8g.font_10x20)
+		disp:drawStr(19, 25, "MQTT2OLED")
+		disp:setFont(u8g.font_6x10)
+		disp:drawStr(16, 35, "Uwe Berger, 2017")
+	until disp:nextPage() == false
+	
+-- ggf. Datei nodenames mit Alias-Name einlesen
+function namealias(name, alias)	nodenames[name] = alias end
+if file.exists("nodenames") then
+	nodenames = {}
+	dofile("nodenames")
+end
