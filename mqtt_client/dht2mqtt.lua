@@ -15,11 +15,12 @@
 --      *** off --> Sensor ist nicht aktiv --> wird als MQTT-Testament 
 --                  bei Start des Sensors gesetzt
 --   ** zyklisch jede Minute an einen MQTT-Broker folgendes publizieren:
---      *** sensors/<wifi.sta.gethostname()>/unixtime ...
---      *** sensors/<wifi.sta.gethostname()>/temperature ...
---      *** sensors/<wifi.sta.gethostname()>/humidity ...
---      *** sensors/<wifi.sta.gethostname()>/heap ...
---      *** sensors/<wifi.sta.gethostname()>/readable_timestamp ...
+--      *** sensors/<wifi.sta.gethostname()>/unixtime
+--      *** sensors/<wifi.sta.gethostname()>/temperature
+--      *** sensors/<wifi.sta.gethostname()>/humidity
+--      *** sensors/<wifi.sta.gethostname()>/heap
+--      *** sensors/<wifi.sta.gethostname()>/readable_timestamp
+--      *** sensors/<wifi.sta.gethostname()>/lua_list
 --   ** saemtliche MQTT-Telegramme werden mit gesetztem Retain-Flag 
 --      an den Broker gesendet
 --
@@ -96,10 +97,20 @@ end
 -- Messwerte via MQTT publizieren
 function publish_values()
 	m:publish(mqtt_topic.."heap", node.heap(), 0, 1)
+	m:publish(mqtt_topic.."status", "on", 0, 1)
 	m:publish(mqtt_topic.."temperature", temp, 0, 1)
 	m:publish(mqtt_topic.."humidity", hum, 0, 1)
 	m:publish(mqtt_topic.."unixtime", ts, 0, 1)
 	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(1, true), 0, 1)
+	local l="{"
+	l=l.."heap=\""..node.heap()
+	l=l.."\",status=\"on"
+	l=l.."\",temperature=\""..temp
+	l=l.."\",humidity=\""..hum
+	l=l.."\",unixtime=\""..ts
+	l=l.."\",readable_ts=\""..get_readable_local_datetime(1, true)
+	l=l.."\"}"
+	m:publish(mqtt_topic.."lua_list", l, 0, 1)
 end
 
 
@@ -136,7 +147,7 @@ m = mqtt.Client(client_name, 120)
 m:lwt(mqtt_topic.."status", "off", 0, 1)
 
 -- mit MQTT-broker verbinden
-m:connect("10.1.1.82", 1883, 0, 0,
+m:connect("10.1.1.82", 1883, 0, 1,
 		-- Verbindung mit MQTT-Broker hergestellt
 		function(conn) 
 			print("connected!")

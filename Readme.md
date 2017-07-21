@@ -20,11 +20,12 @@ wurde...:
   sendet und dann die Verbindung beendet
 
 ## oled_ntp_clock
+Eine Uhr:
 - stuendlich aktuelle Zeit von einem NTP-Server holen
 - jede Sekunde Datum/Zeit auf einem OLED ausgeben
 
 ## oled_ntp_clock_analog
-- oled_ntp_clock dito, nur zusätzlich mit analogen Ziffenblatt...
+Wie oled_ntp_clock, nur zusätzlich mit analogen Ziffenblatt...
 
 ## weather_client
 Kommuniziert zyklisch mit einem Server (hier mein Wetter-Server;
@@ -59,16 +60,19 @@ holen und entsprechend auf einem OLED (128x64) anzeigen --> Anzeige
 automatisch alle 5s tageweise rollierend
 
 ## wifi_scanner
-- alle 3 Sekunden WLAN nach APs scannen und entsprechende Informationen
-  zu den gefundenen APs ausgeben
+Alle 3 Sekunden WLAN nach APs scannen und entsprechende Informationen zu 
+den gefundenen APs ausgeben
+  
+## access_point
+ESP8266-Module als Accesspoint.
   
 ## mqtt_client
 Analog dht_telnet. Zusaetzlich werden die Werte zu einem MQTT-Broker
 publiziert.
 
 ## mqtt2oled
-Anzeige der MQTT-Messages auf einem OLED, welche alle im Netz vorhandenen
-mqtt-clients publizieren.
+Aehnlich weather_clock_my_server, allerdings werden (fast) alle anzuzeigenden
+Daten via MQTT empfangen.
   
   
 ---------  

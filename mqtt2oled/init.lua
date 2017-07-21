@@ -1,5 +1,5 @@
-ssid       = "xxx"
-pwd        = "yyy"
+ssid       = "zyx"
+pwd        = "xyz"
 node_hostname = "esp8266-"..node.chipid()
 
 print("Connecting to wifi...")
