@@ -20,7 +20,7 @@
 local M = {}
 
 local display_cycle = nil
-M.display_name = "display_foracast"
+M.display_name = "display_forecast"
 
 -- **********************************************************************
 function M.display_destroy(timer)

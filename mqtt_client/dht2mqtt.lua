@@ -31,6 +31,7 @@
 
 dht_pin  = 4
 ts, stat, temp, hum = 0, -1, "xx", "xx"
+old_temp, old_hum = 0, 0
 
 ntp_server = "de.pool.ntp.org"
 
@@ -86,11 +87,21 @@ end
 -- DHT und RTC auslesen
 function read_values()
 	stat, temp, hum, temp_dec, hum_dec = dht.read(dht_pin)
-	if stat == dht.OK then
+	-- wenn Werte im zulaessigen Bereich liegen, dann diese uebernehmen
+	-- ...ansonsten die Werte der vorherigen Messung
+	if (stat == dht.OK) and 
+	   (temp >= -40) and (temp <= 80) and
+	   (hum >= 0) and (hum <= 100)
+	then
+		old_temp = temp
+		old_hum = hum
 		temp = temp.."."..temp_dec/100
 		hum  = hum.."."..hum_dec/100
+	else 
+		temp = old_temp
+		hum = old_hum
 	end
-	ts = rtctime.get()
+	ts = rtctime.get()	
 end
 
 -- **********************************************************************

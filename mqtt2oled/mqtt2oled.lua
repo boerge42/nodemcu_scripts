@@ -5,7 +5,8 @@
 --
 -- * alle Stunde RTC via NTP synchronisieren
 -- * Telnet-Server an Port 8266 bereitstellen, welcher
---   "ts=UNIX-Zeit|stat=Status|temp=Temperatur|Hum=Luftfeuchtigkeit|heap=freier dyn. Speicher"
+--   "ts=UNIX-Zeit|stat=Status|temp=Temperatur|Hum=Luftfeuchtigkeit|
+--   heap=freier dyn. Speicher"
 --   sendet und dann die Verbindung beendet
 -- * Nachrichten an einen MQTT-Broker senden:
 --   ** ohne Anmeldung und unverschluesselt 
@@ -55,8 +56,9 @@ local pin_scl = 3
 local dht_pin = 1
 
 local ts, stat, temp, hum = 0, -1, "xx", "xx"
+local old_temp, old_hum = 0, 0
+
 local mode = 1
-local debounce_delay = 30
 
 -- MQTT-Daten plus ein paar Steuervariable...
 values={
@@ -69,6 +71,7 @@ values={
 	forecast_idx = 1,
 	tz_offset = 2
 }
+
 
 
 -- **********************************************************************
@@ -99,7 +102,8 @@ end
 
 -- **********************************************************************
 -- Sommerzeit?
--- Quelle: https://github.com/maciejmiklas/NodeMCUUtils/blob/master/dateformatEurope.lua
+-- Quelle: 
+-- https://github.com/maciejmiklas/NodeMCUUtils/blob/master/dateformatEurope.lua
 -- ts --> UTC-Zeit (...aus rtctime.get())
 local function is_summertime(ts)
 	if ts.mon < 3 or ts.mon > 10 then 
@@ -145,9 +149,19 @@ end
 -- DHT und RTC auslesen
 function read_values()
 	stat, temp, hum, temp_dec, hum_dec = dht.read(dht_pin)
-	if stat == dht.OK then
+	-- wenn Werte im zulaessigen Bereich liegen, dann diese uebernehmen
+	-- ...ansonsten die Werte der vorherigen Messung
+	if (stat == dht.OK) and 
+	   (temp >= -40) and (temp <= 80) and
+	   (hum >= 0) and (hum <= 100)
+	then
+		old_temp = temp
+		old_hum = hum
 		temp = temp.."."..temp_dec/100
 		hum  = hum.."."..hum_dec/100
+	else 
+		temp = old_temp
+		hum = old_hum
 	end
 	ts = rtctime.get()
 end
@@ -166,7 +180,7 @@ local function fill_lists(topic, data)
 			-- meine Wetterwerte
 			local f = assert(loadstring("return "..data))
 			values.weather = f()
-			if oled.display_name == "display_myweather" then
+			if is_mode("display_myweather") then
 				oled.display(values)
 			end
 			
@@ -174,7 +188,7 @@ local function fill_lists(topic, data)
 			-- Wettervorhersage
 			local f = assert(loadstring("return "..data))
 			values.forecast = f()
-			if oled.display_name == "display_forecast" then
+			if is_mode("display_forecast") then
 				oled.display(values)
 			end
 			
@@ -191,7 +205,7 @@ local function fill_lists(topic, data)
 				local f = assert(loadstring("return "..data))
 				values.sensors[ts[2]] = f()
 			end
-			if oled.display_name == "display_sensors" then
+			if is_mode("display_sensors") then
 				oled.display(values)
 			end
 		end
@@ -234,49 +248,62 @@ local function publish_values()
 	m:publish(mqtt_topic.."lua_list", l, 0, 1)
 end
 
+
+-- **********************************************************************
+function is_mode(m)
+	return (oled.display_name == m)
+end
+
 -- **********************************************************************
 local function switch6up()
 	gpio.trig(6, "none")
-	tmr.alarm(0, debounce_delay, tmr.ALARM_SINGLE, function()
-										gpio.trig(6, "down", switch6down)
-										end)
+	tmr.alarm(0, 30, tmr.ALARM_SINGLE, 
+				function()
+					gpio.trig(6, "down", switch6down)
+				end)
 end
 
 -- **********************************************************************
 function switch7up()
 	gpio.trig(7, "none")
-	tmr.alarm(0, debounce_delay, tmr.ALARM_SINGLE, function()
-										gpio.trig(7, "down", switch7down)
-										end)
+	tmr.alarm(0, 30, tmr.ALARM_SINGLE, 
+				function()
+					gpio.trig(7, "down", switch7down)
+				end)
 end
 
 -- **********************************************************************
 function switch6down()
 	gpio.trig(6, "none")
-	tmr.alarm(0, debounce_delay, tmr.ALARM_SINGLE, function()
-										gpio.trig(6, "up", switch6up)
-										if (mode==2) then
-											-- naechstes Node...
-											values.sensors_idx = values.sensors_idx + 1
-											if values.sensors_idx > #values.nodes then values.sensors_idx = 1 end
-											oled.display(values)
-										elseif (mode==4) and (values.forecast.fc~=nil) then
-											values.forecast_idx = values.forecast_idx + 1
-											if values.forecast_idx > #values.forecast.fc then values.forecast_idx = 1 end
-											oled.display(values)
-										end
-										end)
+	tmr.alarm(0, 30, tmr.ALARM_SINGLE, 
+				function()
+					gpio.trig(6, "up", switch6up)
+					if is_mode("display_sensors") then
+						values.sensors_idx = values.sensors_idx + 1
+						if values.sensors_idx > #values.nodes then 
+							values.sensors_idx = 1 
+						end
+						oled.display(values)
+					elseif is_mode("display_forecast") then
+						values.forecast_idx = values.forecast_idx + 1
+						if values.forecast_idx > #values.forecast.fc then 
+							values.forecast_idx = 1 
+						end
+						oled.display(values)
+					end
+				end)
 end
 
 -- **********************************************************************
 function switch7down()
 	gpio.trig(7, "none")
-	tmr.alarm(0, debounce_delay, tmr.ALARM_SINGLE, function()
-										gpio.trig(7, "up", switch7up)
-										mode=mode+1
-										if mode>5 then mode=1 end
-										switch_display()
-										end)
+	tmr.alarm(0, 30, tmr.ALARM_SINGLE, 
+				function()
+					gpio.trig(7, "up", switch7up)
+					mode=mode+1
+					if mode>5 then mode=1 end
+					switch_display()
+				end)
 end
 
 
