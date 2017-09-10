@@ -51,7 +51,7 @@ function M.display(d)
 			disp:drawStr(64-string.len(s)*9/2, 40, s)
 			
 			s= d.weather.pressure_rel.."hPa"
-			if (tonumber(d.weather.ressure_rising) == 1) then t = "2" else t = "<" end
+			if (tonumber(d.weather.pressure_rising) == 1) then t = "2" else t = "<" end
 			disp:drawStr(64-string.len(s)*9/2, 55, s)
 			disp:setFont(u8g.font_9x15_75r)
 			disp:drawStr(68 + string.len(s)*9/2, 55, t)
