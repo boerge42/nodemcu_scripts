@@ -64,6 +64,7 @@ local mode = 1
 values={
 	nodes    = {},
 	sensors  = {},
+	sensor_status  = {},
 	nodenames = {},
 	weather  = {},
 	forecast = {},
@@ -196,14 +197,18 @@ local function fill_lists(topic, data)
 			-- bleiben noch die Sensoren uebrig...
 			-- ...es sollten 3 Listenelemte entstanden sein (siehe oben)
 			if #ts == 3 then
-				-- wenn dieses Node noch nicht bekannt, dann Listen initialisieren
-				if values.sensors[ts[2]] == nil then
-					--print(ts[2])
-					table.insert(values.nodes, ts[2])
-					values.sensors[ts[2]]={}
+				if ts[3] == "status" then
+					values.sensor_status[ts[2]]=data
+				else
+					-- wenn dieses Node noch nicht bekannt, dann Listen initialisieren
+					if values.sensors[ts[2]] == nil then
+						--print(ts[2])
+						table.insert(values.nodes, ts[2])
+						values.sensors[ts[2]]={}
+					end
+					local f = assert(loadstring("return "..data))
+					values.sensors[ts[2]] = f()
 				end
-				local f = assert(loadstring("return "..data))
-				values.sensors[ts[2]] = f()
 			end
 			if is_mode("display_sensors") then
 				oled.display(values)
@@ -358,6 +363,7 @@ m:connect(mqtt_broker, mqtt_port, 0, 0,
 			m:subscribe(
 						{
 							["sensors/+/lua_list"]=0,
+							["sensors/+/status"]=0,
 							["myweather/lua_list"]=0,
 							["weatherforecast/lua_list"]=0
 						})
