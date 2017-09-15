@@ -115,13 +115,47 @@ function publish_values()
 	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(1, true), 0, 1)
 	local l="{"
 	l=l.."heap=\""..node.heap()
-	l=l.."\",status=\"on"
+	--l=l.."\",status=\"on"
 	l=l.."\",temperature=\""..temp
 	l=l.."\",humidity=\""..hum
 	l=l.."\",unixtime=\""..ts
 	l=l.."\",readable_ts=\""..get_readable_local_datetime(1, true)
 	l=l.."\"}"
 	m:publish(mqtt_topic.."lua_list", l, 0, 1)
+end
+
+-- **********************************************************************
+-- wenn Problem mit MQTT-Broker, dann nach 10s Verbindungsaufbau erneut versuchen...
+function mqtt_error_handle() 
+	tmr.alarm(2, 10000, tmr.ALARM_SINGLE, mqtt_connect())
+end
+
+-- **********************************************************************
+-- mit MQTT-Broker verbinden etc. ...
+function mqtt_connect()
+	-- MQTT-Testament dieses Sensors festlegen...
+	m:lwt(mqtt_topic.."status", "off", 0, 1)
+	-- mit MQTT-broker verbinden
+	m:connect("10.1.1.82", 1883, 0, 1,
+			-- Verbindung mit MQTT-Broker hergestellt
+			function(conn) 
+				print("connected!")
+				-- was passiert, wenn keine Verbindung mehr zum Broker...
+				m:on("offline", function() mqtt_connect() end)
+				-- Sensor online melden
+				m:publish(mqtt_topic.."status", "on", 0, 1)
+				-- jede Minute Messwerte via MQTT publizieren
+				tmr.alarm(0,60000,1, function() 
+										read_values()
+										publish_values()
+									end) 
+			end,
+			-- keine Verbindung mit MQTT-Broker zustande gekommen
+			function(conn, reason)
+				print("MQTT-Connect failed: "..reason)
+				mqtt_error_handle()
+			end
+	)
 end
 
 
@@ -154,27 +188,8 @@ tmr.alarm(1, 3600000, 1, function() read_ntp() end)
 -- mit MQTT-Client definieren
 m = mqtt.Client(client_name, 120)
 
--- MQTT-Testament dieses Sensors festlegen...
-m:lwt(mqtt_topic.."status", "off", 0, 1)
-
--- mit MQTT-broker verbinden
-m:connect("10.1.1.82", 1883, 0, 1,
-		-- Verbindung mit MQTT-Broker hergestellt
-		function(conn) 
-			print("connected!")
-			-- Sensor online melden
-			m:publish(mqtt_topic.."status", "on", 0, 1)
-			-- jede Minute Messwerte via MQTT publizieren
-			tmr.alarm(0,60000,1, function() 
-									read_values()
-									publish_values()
-								end) 
-		end,
-		-- keine Verbindung mit MQTT-Broker zustande gekommen
-		function(conn, reason)
-			print("MQTT-Connect failed: "..reason)
-		end
-)
+-- mit MQTT-Broker verbinden
+mqtt_connect()
 
 -- Messwerte via Request auf Port 8266 ausliefern
 srv=net.createServer(net.TCP) 

@@ -27,12 +27,13 @@
 --          ==============
 --   ** Empfang folgender MQTT-Topics
 --      *** sensors/+/lua_list
+--      *** sensors/+/status
 --      *** myweather/lua_list
 --      *** weatherforecast/lua_list
 --   ** Ausgabe von:
 --      *** Datum/Uhrzeit
 --      *** Messwerte Sensoren
---      *** aktuelle Messerte meiner Wetterstation
+--      *** aktuelle Messwerte meiner Wetterstation
 --      *** Wettervorhersage
 --      *** Systeminformationen
 --      auf einem OLED, umschaltbar ueber zwei Taster
@@ -244,7 +245,7 @@ local function publish_values()
 	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(1, true), 0, 1)
 	local l="{"
 	l=l.."heap=\""..node.heap()
-	l=l.."\",status=\"on"
+	--l=l.."\",status=\"on"
 	l=l.."\",temperature=\""..temp
 	l=l.."\",humidity=\""..hum
 	l=l.."\",unixtime=\""..ts
