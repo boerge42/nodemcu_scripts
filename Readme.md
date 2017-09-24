@@ -70,6 +70,9 @@ ESP8266-Module als Accesspoint.
 Analog dht_telnet. Zusaetzlich werden die Werte zu einem MQTT-Broker
 publiziert.
 
+## bme280mqtt
+Analog mqtt_client, nur mit einem BME280 als Sensore.
+
 ## mqtt2oled
 Aehnlich weather_clock_my_server, allerdings werden (fast) alle anzuzeigenden
 Daten via MQTT empfangen.
