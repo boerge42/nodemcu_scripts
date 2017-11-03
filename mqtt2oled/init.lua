@@ -1,5 +1,5 @@
-ssid       = "UWE_HOME1"
-pwd        = "u1504u1504"
+ssid       = "42"
+pwd        = "42"
 node_hostname = "esp8266-"..node.chipid()
 
 print("Connecting to wifi...")
