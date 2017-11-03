@@ -25,6 +25,7 @@
 --      *** sensors/<wifi.sta.gethostname()>/heap
 --      *** sensors/<wifi.sta.gethostname()>/readable_timestamp
 --      *** sensors/<wifi.sta.gethostname()>/lua_list
+--      *** sensors/<wifi.sta.gethostname()>/json
 --   ** saemtliche MQTT-Telegramme werden mit gesetztem Retain-Flag 
 --      an den Broker gesendet
 --
@@ -42,6 +43,7 @@ ntp_server = "de.pool.ntp.org"
 mqtt_broker = "10.1.1.82"
 client_name = wifi.sta.gethostname()
 mqtt_topic = "sensors/"..client_name.."/"
+node_type = "bme280"
 
 print(mqtt_topic)
 
@@ -120,6 +122,15 @@ function read_bme280()
 	return t, p, h, qnh, d
 end
 
+-- *********************************************************************
+function get_values()
+--	print "Hallo Uwe!" 
+	local t, p, h, qnh, d = read_bme280()
+    local buf="ts="..rtctime.get().."|temp="..t.."|hum="..h.."|heap="..node.heap()
+    buf=buf.."|press_rel="..qnh.."|drew_point="..d
+    print(buf)
+end
+
 -- **********************************************************************
 -- Messwerte via MQTT publizieren
 function publish_values(t, p, h, qnh, d)
@@ -131,6 +142,7 @@ function publish_values(t, p, h, qnh, d)
 	m:publish(mqtt_topic.."drew_point", d, 0, 1)
 	m:publish(mqtt_topic.."unixtime", rtctime.get(), 0, 1)
 	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(1, true), 0, 1)
+	-- Lua-Liste
 	local l="{"
 	l=l.."heap=\""..node.heap()
 	l=l.."\",temperature=\""..t
@@ -138,20 +150,24 @@ function publish_values(t, p, h, qnh, d)
 	l=l.."\",pressure_rel=\""..qnh
 	l=l.."\",drew_point=\""..d
 	l=l.."\",unixtime=\""..rtctime.get()
+	l=l.."\",node_name=\""..client_name
+	l=l.."\",node_type=\""..node_type
 	l=l.."\",readable_ts=\""..get_readable_local_datetime(1, true)
 	l=l.."\"}"
 	m:publish(mqtt_topic.."lua_list", l, 0, 1)
-end
-
--- *********************************************************************
-function print_bme280(t, p, h, qnh, d)
-	print("temperature="..t)
-	print("QFE="..p)
-	print("QNH="..qnh)
-	print("humidity="..h)
-	print("dew_point="..d)
-	print(get_readable_local_datetime(1, true))
-	print("=======");
+	-- JSON
+	l="{"
+	l=l.."\"heap\":\""..node.heap()
+	l=l.."\",\"temperature\":\""..t
+	l=l.."\",\"humidity\":\""..h
+	l=l.."\",\"pressure_rel\":\""..qnh
+	l=l.."\",\"drew_point\":\""..d
+	l=l.."\",\"unixtime\":\""..rtctime.get()
+	l=l.."\",\"node_name\":\""..client_name
+	l=l.."\",\"node_type\":\""..node_type
+	l=l.."\",\"readable_ts\":\""..get_readable_local_datetime(1, true)
+	l=l.."\"}"
+	m:publish(mqtt_topic.."json", l, 0, 1)
 end
 
 -- **********************************************************************
@@ -199,9 +215,6 @@ tmr.alarm(1, 3600000, 1, function() read_ntp() end)
 -- I2C und BME280 initialisieren
 i2c.setup(0, sda, scl, i2c.SLOW)
 bme280.setup()
-
--- alle 10s eine Testausgabe
-tmr.alarm(2, 10000, 1, function() print_bme280(read_bme280()) end)
 
 -- MQTT-Client definieren
 m = mqtt.Client(client_name, 120)

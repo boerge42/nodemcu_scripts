@@ -21,6 +21,7 @@
 --      *** sensors/<wifi.sta.gethostname()>/heap
 --      *** sensors/<wifi.sta.gethostname()>/readable_timestamp
 --      *** sensors/<wifi.sta.gethostname()>/lua_list
+--      *** sensors/<wifi.sta.gethostname()>/json
 --   ** saemtliche MQTT-Telegramme werden mit gesetztem Retain-Flag 
 --      an den Broker gesendet
 --
@@ -38,6 +39,7 @@ ntp_server = "de.pool.ntp.org"
 mqtt_broker = "10.1.1.82"
 client_name = wifi.sta.gethostname()
 mqtt_topic = "sensors/"..client_name.."/"
+node_type = "dht22"
 
 -- **********************************************************************
 -- Sommerzeit?
@@ -113,15 +115,29 @@ function publish_values()
 	m:publish(mqtt_topic.."humidity", hum, 0, 1)
 	m:publish(mqtt_topic.."unixtime", ts, 0, 1)
 	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(1, true), 0, 1)
+	-- Lua-List
 	local l="{"
 	l=l.."heap=\""..node.heap()
 	--l=l.."\",status=\"on"
 	l=l.."\",temperature=\""..temp
 	l=l.."\",humidity=\""..hum
 	l=l.."\",unixtime=\""..ts
+	l=l.."\",node_name=\""..client_name
+	l=l.."\",node_type=\""..node_type
 	l=l.."\",readable_ts=\""..get_readable_local_datetime(1, true)
 	l=l.."\"}"
 	m:publish(mqtt_topic.."lua_list", l, 0, 1)
+	-- JSON
+	l="{"
+	l=l.."\"heap\":\""..node.heap()
+	l=l.."\",\"temperature\":\""..temp
+	l=l.."\",\"humidity\":\""..hum
+	l=l.."\",\"unixtime\":\""..ts
+	l=l.."\",\"node_name\":\""..client_name
+	l=l.."\",\"node_type\":\""..node_type
+	l=l.."\",\"readable_ts\":\""..get_readable_local_datetime(1, true)
+	l=l.."\"}"
+	m:publish(mqtt_topic.."json", l, 0, 1)
 end
 
 -- **********************************************************************
