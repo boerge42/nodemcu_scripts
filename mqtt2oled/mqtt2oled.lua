@@ -73,7 +73,7 @@ values={
 	forecast = {},
 	sensors_idx = 1,
 	forecast_idx = 1,
-	tz_offset = 2
+	tz_offset = 1
 }
 
 
@@ -244,7 +244,7 @@ local function publish_values()
 	m:publish(mqtt_topic.."temperature", temp, 0, 1)
 	m:publish(mqtt_topic.."humidity", hum, 0, 1)
 	m:publish(mqtt_topic.."unixtime", ts, 0, 1)
-	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(1, true), 0, 1)
+	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(values.tz_offset, true), 0, 1)
 	-- Lua-Liste
 	local l="{"
 	l=l.."heap=\""..node.heap()
@@ -254,7 +254,7 @@ local function publish_values()
 	l=l.."\",unixtime=\""..ts
 	l=l.."\",node_name=\""..client_name
 	l=l.."\",node_type=\""..node_type
-	l=l.."\",readable_ts=\""..get_readable_local_datetime(1, true)
+	l=l.."\",readable_ts=\""..get_readable_local_datetime(values.tz_offset, true)
 	l=l.."\"}"
 	m:publish(mqtt_topic.."lua_list", l, 0, 1)
 	-- JSON
@@ -265,7 +265,7 @@ local function publish_values()
 	l=l.."\",\"unixtime\":\""..ts
 	l=l.."\",\"node_name\":\""..client_name
 	l=l.."\",\"node_type\":\""..node_type
-	l=l.."\",\"readable_ts\":\""..get_readable_local_datetime(1, true)
+	l=l.."\",\"readable_ts\":\""..get_readable_local_datetime(values.tz_offset, true)
 	l=l.."\"}"
 	m:publish(mqtt_topic.."json", l, 0, 1)
 end
