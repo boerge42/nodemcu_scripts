@@ -73,8 +73,8 @@ publiziert.
 ## bme280mqtt
 Analog mqtt_client, nur:
 - mit einem BME280 als Sensor
-- MQTT-Topic: <nodename>/cmd ...als Lua-Kommando-Eingabe
-- MQTT-Topic: <nodename>/output ...als (Lua-Interpreter-)Ausgabe
+- MQTT-Topic: nodename/cmd    --> als Lua-Kommando-Eingabe
+- MQTT-Topic: nodename/output --> als (Lua-Interpreter-)Ausgabe
 
 ## mqtt2oled
 Aehnlich weather_clock_my_server, allerdings werden (fast) alle anzuzeigenden
