@@ -34,6 +34,9 @@
 --
 -- *********************************************************************
 
+mc=require "mqtt_cmd"
+
+
 
 alt=39 -- altitude of the measurement place
 sda, scl = 3, 4
@@ -44,54 +47,6 @@ mqtt_broker = "10.1.1.82"
 client_name = wifi.sta.gethostname()
 mqtt_topic = "sensors/"..client_name.."/"
 node_type = "bme280"
-
--- **********************************************************************
--- *** CMD-Line via MQTT ************************************************
--- **********************************************************************
--- ----
--- verwendetetes globales Zeugs:
---     * m --> MQTT-Client
---     * client_name --> Client-Name ;-)
-
--- ----
--- Ausgabe auch via serieller Schnittstelle? (1-->ja; 0-->nein)
-debug_output = 0
-
--- ----
--- Callback-Funktion zur Umlenkung der Ausgabe auf einen MQTT-Topic
--- ...
--- ...(intern) in mqtt_cmd_subscribe()
--- ...
-function mqtt_output(str)
-	m:publish(client_name.."/output", str, 0, 0)
-end
-
--- ----
--- CMD-Kanal abbonieren
--- ...
--- ...wenn Verbindung zu MQTT-Broker erfolgreich...
--- ...
-function mqtt_cmd_subscribe()
-	m:subscribe(client_name.."/cmd", 0, function(conn) 
-											print("mqtt-cmd succeed, redirect output...") 
-											node.output(mqtt_output, debug_output)
-										end)
-end
-
--- ----
--- empfangenes Kommando ausfuehren
--- ...
--- ...aufgerufen in --> m:on("message", ...
--- ...
-function mqtt_cmd_message(topic, data)
-	if topic == client_name.."/cmd" then 
-		node.input(data)
-	end
-end
-
--- **********************************************************************
--- **********************************************************************
-
 
 
 -- **********************************************************************
@@ -230,7 +185,7 @@ function mqtt_connect()
 	-- ...wenn eine MQTT-Nachricht ueber die abonnierten Kanaele kommt
 	m:on("message", function(client, topic, data) 
 					-- MQTT-Kommandozeile...
-					mqtt_cmd_message(topic, data)
+					mc.mqtt_cmd_message(topic, data)
 					end)
 	-- mit MQTT-broker verbinden
 	m:connect("10.1.1.82", 1883, 0, 0,
@@ -242,7 +197,7 @@ function mqtt_connect()
 				-- Sensor online melden
 				m:publish(mqtt_topic.."status", "on", 0, 1)
 				-- MQTT-Kommandozeile initialisieren
-				mqtt_cmd_subscribe()
+				mc.mqtt_cmd_setup(m, client_name, 1, 1)
 				-- jede Minute Messwerte via MQTT publizieren
 				tmr.alarm(3,60000,1, function() 
 										publish_values(read_bme280())
