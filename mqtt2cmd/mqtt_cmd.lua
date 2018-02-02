@@ -1,11 +1,11 @@
 -- **********************************************************************
 --
---                     mqtt_cmd.lua
---                    ================
---                    Uwe Berger; 2017
+--                         mqtt_cmd.lua
+--                    ======================
+--                    Uwe Berger; 2017, 2018
 --
 -- ...quasi eine Kommando-Shell auf Basis MQTT
-
+--
 -- Shell-Input  MQTT-Topic: <mqtt_topic>/cmd...
 -- Shell-Output MQTT-Topic: <mqtt_topic>/output
 --
@@ -13,7 +13,7 @@
 -- Lua-Anwendung aufzurufen:
 --
 -- Eigentliche Initialisierung nach erfolgreicher Verbindung zum
--- MQTT-Broker 
+-- MQTT-Broker:
 -- * mqtt_cmd_setup(mqtt, mqtt_topic, output2mqtt, debug_output)
 --   ** mqtt --> MQTT-Verbindung
 --   ** mqtt_topic --> MQTT-Topic-Teil vor cmd bzw. output
@@ -23,8 +23,22 @@
 --                                                    ^^^^^^^^^^^^
 --
 -- In der Methode der Lua-Anwendung, in der eingehende MQTT-Nachrichten 
--- behandelt werden
+-- behandelt werden:
 -- * mqtt_cmd_message()
+--
+-- Welche Kommandos und wie diese implementiert sind (Kommando allein im
+-- Payload oder in Kombination mit weiteren Topic-Elementen), ist dem 
+-- kommentierten Quelltext zu entnehmen. Die ganze Geschichte ist indi-
+-- viduell erweiterbar bzw. anpassbar. Der Phantasie sind keine Grenzen
+-- gesetzt. Man sollte aber abwägen, was sinnvoll bzw., aus Sicherheits-
+-- sicht, in der eingesetzten Umgebung sinnvoll ist!
+--
+--
+-- Zum Ausprobieren sind z.B.:
+-- * mosquitto_sub -h <mqtt-broker> -t <mqtt-topic>/output
+-- * mosquitto_pub -h <mqtt-broker> -t <mqtt-topic>/cmd -l
+-- deine Freunde...
+--
 --
 -- ---------
 -- Have fun!
@@ -55,16 +69,6 @@ end
 function M.mqtt_cmd_delcmd(c)
 	if c ~= nil and token[c] ~= nil then token[c] = nil end
 end
-
--- **********************************************************************
--- ein Kommando hinzufuegen --> geht noch nicht :-(
---
---function M.mqtt_cmd_addcmd(c, d)
---	if c ~= nil and token[c] == nil and d ~= nil then
---		local f = loadstring(d) 
---		token[c] = f()
---	end
---end
 
 -- **********************************************************************
 -- Implementierungen der Kommandos
@@ -105,20 +109,19 @@ token["compile"] =
 function(p) node.compile(p[2]) end
 
 -- ****** delcmd *******
---token["delcmd"] =
---function (p) M.mqtt_cmd_delcmd(p[2]) end 
+token["delcmd"] =
+function (p) M.mqtt_cmd_delcmd(p[2]) end 
 
--- ****** .../cmd/interpr data *******
---token["interpr"] =
---function(p, d) 
---	if d ~= nil then node.input(d) end 
---end
+-- ****** topic: .../cmd/interpr data *******
+-- payload-Inhalt wird als Lua-/NodeMCU-Kommando evaluiert
+token["interpr"] =
+function(p, d) 
+	if d ~= nil then node.input(d) end 
+end
 
--- ****** .../cmd/addcmd/<cmd> data *******
---token["addcmd"] =
---function(p, d) M.mqtt_cmd_addcmd(p[3], d) end
-
--- ****** .../cmd/write/<filename> data *******
+-- ****** topic: .../cmd/write/<filename> data *******
+-- payload-Inhalt in eine Datei schreiben; wenn Datei bereits existiert,
+-- dann wird sie ueberschrieben
 token["write"] = 
 function(p, d)
 	if file.open(p[3], "w") then

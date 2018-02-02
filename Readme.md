@@ -80,6 +80,9 @@ Analog mqtt_client, nur:
 Aehnlich weather_clock_my_server, allerdings werden (fast) alle anzuzeigenden
 Daten via MQTT empfangen.
   
-  
+## mqtt2cmd
+Kommandozeile via MQTT-Protokoll
+
+
 ---------  
 Have fun!

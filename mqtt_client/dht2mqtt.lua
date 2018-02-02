@@ -24,11 +24,15 @@
 --      *** sensors/<wifi.sta.gethostname()>/json
 --   ** saemtliche MQTT-Telegramme werden mit gesetztem Retain-Flag 
 --      an den Broker gesendet
---
+-- * mqtt_cmd: siehe mqtt_cmd.lua
+-- * node_alias aus Datei nodealias ermitteln
+----
 -- ---------
 -- Have fun!
 --
 -- **********************************************************
+
+mc=require "mqtt_cmd"
 
 dht_pin  = 4
 ts, stat, temp, hum = 0, -1, "xx", "xx"
@@ -40,6 +44,11 @@ mqtt_broker = "10.1.1.82"
 client_name = wifi.sta.gethostname()
 mqtt_topic = "sensors/"..client_name.."/"
 node_type = "dht22"
+
+node_alias=""
+if file.exists("nodealias") then
+	dofile("nodealias")
+end
 
 -- **********************************************************************
 -- Sommerzeit?
@@ -111,6 +120,8 @@ end
 function publish_values()
 	m:publish(mqtt_topic.."heap", node.heap(), 0, 1)
 	m:publish(mqtt_topic.."status", "on", 0, 1)
+	m:publish(mqtt_topic.."node_alias", node_alias, 0, 1)
+	m:publish(mqtt_topic.."node_type", node_type, 0, 1)
 	m:publish(mqtt_topic.."temperature", temp, 0, 1)
 	m:publish(mqtt_topic.."humidity", hum, 0, 1)
 	m:publish(mqtt_topic.."unixtime", ts, 0, 1)
@@ -123,6 +134,7 @@ function publish_values()
 	l=l.."\",humidity=\""..hum
 	l=l.."\",unixtime=\""..ts
 	l=l.."\",node_name=\""..client_name
+	l=l.."\",node_alias=\""..node_alias
 	l=l.."\",node_type=\""..node_type
 	l=l.."\",readable_ts=\""..get_readable_local_datetime(1, true)
 	l=l.."\"}"
@@ -134,6 +146,7 @@ function publish_values()
 	l=l.."\",\"humidity\":\""..hum
 	l=l.."\",\"unixtime\":\""..ts
 	l=l.."\",\"node_name\":\""..client_name
+	l=l.."\",\"node_alias\":\""..node_alias
 	l=l.."\",\"node_type\":\""..node_type
 	l=l.."\",\"readable_ts\":\""..get_readable_local_datetime(1, true)
 	l=l.."\"}"
@@ -151,6 +164,11 @@ end
 function mqtt_connect()
 	-- MQTT-Testament dieses Sensors festlegen...
 	m:lwt(mqtt_topic.."status", "off", 0, 1)
+	-- ...wenn eine MQTT-Nachricht ueber die abonnierten Kanaele kommt
+	m:on("message", function(client, topic, data) 
+					-- MQTT-Kommandozeile...
+					mc.mqtt_cmd_message(topic, data)
+					end)
 	-- mit MQTT-broker verbinden
 	m:connect("10.1.1.82", 1883, 0, 1,
 			-- Verbindung mit MQTT-Broker hergestellt
@@ -160,6 +178,8 @@ function mqtt_connect()
 				m:on("offline", function() mqtt_connect() end)
 				-- Sensor online melden
 				m:publish(mqtt_topic.."status", "on", 0, 1)
+				-- MQTT-Kommandozeile initialisieren
+				mc.mqtt_cmd_setup(m, client_name, 1, 1)
 				-- jede Minute Messwerte via MQTT publizieren
 				tmr.alarm(0,60000,1, function() 
 										read_values()

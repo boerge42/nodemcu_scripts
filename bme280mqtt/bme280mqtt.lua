@@ -28,6 +28,9 @@
 --      *** sensors/<wifi.sta.gethostname()>/json
 --   ** saemtliche MQTT-Telegramme werden mit gesetztem Retain-Flag 
 --      an den Broker gesendet
+-- * mqtt_cmd: siehe mqtt_cmd.lua
+-- * Variablen node_alias/altitude aus Datein nodealias/altitude 
+--   ermitteln
 --
 -- ---------
 -- Have fun!
@@ -36,9 +39,8 @@
 
 mc=require "mqtt_cmd"
 
+altitude=39 -- altitude of the measurement place
 
-
-alt=39 -- altitude of the measurement place
 sda, scl = 3, 4
 
 ntp_server = "de.pool.ntp.org"
@@ -48,6 +50,16 @@ client_name = wifi.sta.gethostname()
 mqtt_topic = "sensors/"..client_name.."/"
 node_type = "bme280"
 
+node_alias=""
+
+
+-- **********************************************************************
+-- dofile mit vorheriger Existenzpruefung
+function my_dofile(name)
+	if file.exists(name) then
+		dofile(name)
+	end
+end
 
 -- **********************************************************************
 -- Sommerzeit?
@@ -113,7 +125,7 @@ end
 
 -- *********************************************************************
 function read_bme280()
-	local t, p, h, qnh = bme280.read(alt)
+	local t, p, h, qnh = bme280.read(altitude)
 	local d = bme280.dewpoint(h, t)
 	t   = (t/100)   .."."..((t%100)/10)
 	p   = (p/1000)  .."."..((p%1000)/100)
@@ -137,6 +149,8 @@ end
 function publish_values(t, p, h, qnh, d)
 	m:publish(mqtt_topic.."heap", node.heap(), 0, 1)
 	m:publish(mqtt_topic.."status", "on", 0, 1)
+	m:publish(mqtt_topic.."node_alias", node_alias, 0, 1)
+	m:publish(mqtt_topic.."node_type", node_type, 0, 1)
 	m:publish(mqtt_topic.."temperature", t, 0, 1)
 	m:publish(mqtt_topic.."humidity", h, 0, 1)
 	m:publish(mqtt_topic.."pressure_rel", qnh, 0, 1)
@@ -152,6 +166,7 @@ function publish_values(t, p, h, qnh, d)
 	l=l.."\",drew_point=\""..d
 	l=l.."\",unixtime=\""..rtctime.get()
 	l=l.."\",node_name=\""..client_name
+	l=l.."\",node_alias=\""..node_alias
 	l=l.."\",node_type=\""..node_type
 	l=l.."\",readable_ts=\""..get_readable_local_datetime(1, true)
 	l=l.."\"}"
@@ -165,6 +180,7 @@ function publish_values(t, p, h, qnh, d)
 	l=l.."\",\"drew_point\":\""..d
 	l=l.."\",\"unixtime\":\""..rtctime.get()
 	l=l.."\",\"node_name\":\""..client_name
+	l=l.."\",\"node_alias\":\""..node_alias
 	l=l.."\",\"node_type\":\""..node_type
 	l=l.."\",\"readable_ts\":\""..get_readable_local_datetime(1, true)
 	l=l.."\"}"
@@ -215,6 +231,10 @@ end
 -- *********************************************************************
 -- *********************************************************************
 -- *********************************************************************
+
+-- abweichende Werte einlesen
+my_dofile("altitude")
+my_dofile("nodealias")
 
 -- aktuelle Zeit von einem ntp-Server holen und jede Stunde aktualisieren
 read_ntp()
