@@ -1,5 +1,5 @@
 # nodemcu-Script-Sammlung
-(Uwe Berger; 2016, 2017)
+(Uwe Berger; 2016, 2017, 2018)
 
 Hier sind einige (beispielhafte) Lua-Scripts für 
 [ESP8266-Wifi-Module](http://bralug.de/wiki/ESP8266_mit_NodeMcu) 
@@ -83,6 +83,8 @@ Daten via MQTT empfangen.
 ## mqtt2cmd
 Kommandozeile via MQTT-Protokoll
 
+## ws2812_clock
+Darstellung einer Uhr auf einem Ring mit 60 WS2812-LEDs.
 
 ---------  
 Have fun!
