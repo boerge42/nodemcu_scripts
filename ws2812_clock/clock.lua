@@ -4,9 +4,9 @@
 --                    =================
 --                    Uwe Berger; 2018
 --
--- Darstellung einer Uhr auf einem Ring mit 60 WS2812-LEDs. Die anzuzei-
--- gende Uhrzeit wird von einem NTP-Server im Netz ermittelt und jede 
--- Stunde synchronisiert.
+-- Darstellung einer Uhr auf einem Ring mit 60 WS2812-LEDs. 
+-- Die anzuzeigende Uhrzeit wird von einem NTP-Server im Netz ermittelt 
+-- und jede Stunde synchronisiert.
 --
 -- ...Quelltext lesen!
 --
@@ -26,9 +26,9 @@ with_summertime = true                  -- Sommerzeit beachten?
 ldr_pin 		= 3		-- Pin, ueber den Impulssignal eingespeist wird
 counter			= 0		-- Zwischenvariable zum Impulszaehlen
 ldr_value		= 0		-- enthaelt den letzten ermittelten Wert
-ldr_limit       = 27	-- Wert ausprobieren...
+ldr_limit       = 27	-- ...Schaltschwelle: ...Wert ausprobieren...
 -- Theoretisch koennte man auch, in Abhaengigkeit der Frequenz des
--- Impulssignals, die Helligkeit WS2812-LEDs steuern...
+-- Impulssignals, die Helligkeit der WS2812-LEDs steuern...
 
 
 -- **********************************************************************

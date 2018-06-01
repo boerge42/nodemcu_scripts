@@ -6,10 +6,6 @@
 --
 --
 -- * alle Stunde RTC via NTP synchronisieren
--- * Telnet-Server an Port 8266 bereitstellen, welcher
---   "ts=UNIX-Zeit|stat=Status|temp=Temperatur|Hum=Luftfeuchtigkeit|
---    heap=freier dyn. Speicher|press_rel=rel. Luftdruck|drew_point=Taupunkt"
---   sendet und dann die Verbindung beendet
 -- * Nachrichten an einen MQTT-Broker senden:
 --   ** ohne Anmeldung und unverschluesselt 
 --   ** Sensorstatus via Topic sensors/<wifi.sta.gethostname()>/status
@@ -39,11 +35,12 @@
 
 mc=require "mqtt_cmd"
 
-altitude=39 -- altitude of the measurement place
+altitude = 39 -- altitude of the measurement place
 
 sda, scl = 3, 4
 
 ntp_server = "de.pool.ntp.org"
+ntp_refresh = 3600000      -- ms -> 1h
 
 mqtt_broker = "10.1.1.82"
 client_name = wifi.sta.gethostname()
@@ -51,6 +48,9 @@ mqtt_topic = "sensors/"..client_name.."/"
 node_type = "bme280"
 
 node_alias=""
+
+mqtt_interval = 300000     -- ms -> 5min 
+
 
 
 -- **********************************************************************
@@ -109,18 +109,27 @@ end
 -- **********************************************************************
 -- momentane UNIX-Sekunde von einem NTP-Server holen und RTC setzen
 function read_ntp()
-    net.dns.resolve(ntp_server, function(sk, ip)
-    if (ip == nil) then print("DNS failed!") else
-        sntp.sync(ip,
-            function(sec,usec,server)
-                print('sync', sec, usec, server)
-                rtctime.set(sec, usec)
-            end,
-            function()
-                print('NTP sync failed!')
-            end)
-        end
-    end) 
+	net.dns.resolve(ntp_server, 
+					function(sk, ip)
+						if (ip == nil) then 
+							print("DNS failed!") 
+							-- nach 5 Sekunden naechster Versuch...
+							tmr.alarm(1, 5000, 1, function() read_ntp() end)
+						else
+        					sntp.sync(ip,
+            							function(sec,usec,server)
+                							print('sync', sec, usec, server)
+                							rtctime.set(sec, usec)
+											-- in einer Stunde wieder synchronisieren
+											tmr.alarm(1, ntp_refresh, 1, function() read_ntp() end)
+            							end,
+            							function()
+											print('NTP sync failed!')
+											-- nach 5 Sekunden neachster Versuch
+											tmr.alarm(1, 5000, 1, function() read_ntp() end)
+            							end)
+        				end
+    				end) 
 end
 
 -- *********************************************************************
@@ -133,15 +142,6 @@ function read_bme280()
 	qnh = (qnh/1000).."."..((qnh%1000)/100)
 	d   = (d/100)   .."."..((d%100)/10)
 	return t, p, h, qnh, d
-end
-
--- *********************************************************************
-function get_values()
---	print "Hallo Uwe!" 
-	local t, p, h, qnh, d = read_bme280()
-    local buf="ts="..rtctime.get().."|temp="..t.."|hum="..h.."|heap="..node.heap()
-    buf=buf.."|press_rel="..qnh.."|drew_point="..d
-    print(buf)
 end
 
 -- **********************************************************************
@@ -215,7 +215,7 @@ function mqtt_connect()
 				-- MQTT-Kommandozeile initialisieren
 				mc.mqtt_cmd_setup(m, client_name, 1, 1)
 				-- jede Minute Messwerte via MQTT publizieren
-				tmr.alarm(3,60000,1, function() 
+				tmr.alarm(3, mqtt_interval, 1, function() 
 										publish_values(read_bme280())
 									end) 
 			end,
@@ -238,7 +238,6 @@ my_dofile("nodealias")
 
 -- aktuelle Zeit von einem ntp-Server holen und jede Stunde aktualisieren
 read_ntp()
-tmr.alarm(1, 3600000, 1, function() read_ntp() end)
 
 -- I2C und BME280 initialisieren
 i2c.setup(0, sda, scl, i2c.SLOW)
@@ -249,13 +248,3 @@ m = mqtt.Client(client_name, 120)
 
 -- mit MQTT-Broker verbinden
 mqtt_connect()
-
--- Messwerte via Request auf Port 8266 ausliefern
-srv=net.createServer(net.TCP) 
-srv:listen(8266,function(conn) 
-        local t, p, h, qnh, d = read_bme280()
-        local buf="ts="..rtctime.get().."|temp="..t.."|hum="..h.."|heap="..node.heap()
-        buf=buf.."|press_rel="..qnh.."|drew_point="..d
-        conn:send(buf)
-        conn:close()
-		end)

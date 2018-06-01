@@ -11,7 +11,7 @@
 --
 -- *********************************************************************
 
--- Da wir lustige LEDs zur Verfuegung haben, diese animieren (via 
+-- Da wir ja lustige LEDs zur Verfuegung haben, diese animieren (via 
 -- Timer 5, der entsprechend (im Hauptprogramm und Erfolgsfall) wieder
 -- gestoppt werden sollte..)
 ws2812.init(ws2812.MODE_SINGLE)

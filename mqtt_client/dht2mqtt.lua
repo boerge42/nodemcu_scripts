@@ -5,9 +5,6 @@
 --
 --
 -- * alle Stunde RTC via NTP synchronisieren
--- * Telnet-Server an Port 8266 bereitstellen, welcher
---   "ts=UNIX-Zeit|stat=Status|temp=Temperatur|Hum=Luftfeuchtigkeit|heap=freier dyn. Speicher"
---   sendet und dann die Verbindung beendet
 -- * Nachrichten an einen MQTT-Broker senden:
 --   ** ohne Anmeldung und unverschluesselt 
 --   ** Sensorstatus via Topic sensors/<wifi.sta.gethostname()>/status
@@ -39,11 +36,14 @@ ts, stat, temp, hum = 0, -1, "xx", "xx"
 old_temp, old_hum = 0, 0
 
 ntp_server = "de.pool.ntp.org"
+ntp_refresh = 3600000      -- ms -> 1h
 
 mqtt_broker = "10.1.1.82"
 client_name = wifi.sta.gethostname()
 mqtt_topic = "sensors/"..client_name.."/"
 node_type = "dht22"
+
+mqtt_interval = 300000     -- ms -> 5min 
 
 node_alias=""
 if file.exists("nodealias") then
@@ -181,7 +181,7 @@ function mqtt_connect()
 				-- MQTT-Kommandozeile initialisieren
 				mc.mqtt_cmd_setup(m, client_name, 1, 1)
 				-- jede Minute Messwerte via MQTT publizieren
-				tmr.alarm(0,60000,1, function() 
+				tmr.alarm(0, mqtt_interval, 1, function() 
 										read_values()
 										publish_values()
 									end) 
@@ -198,18 +198,27 @@ end
 -- **********************************************************************
 -- momentane UNIX-Sekunde von einem NTP-Server holen und RTC setzen
 function read_ntp()
-    net.dns.resolve(ntp_server, function(sk, ip)
-    if (ip == nil) then print("DNS failed!") else
-        sntp.sync(ip,
-            function(sec,usec,server)
-                print('sync', sec, usec, server)
-                rtctime.set(sec, usec)
-            end,
-            function()
-                print('NTP sync failed!')
-            end)
-        end
-    end) 
+	net.dns.resolve(ntp_server, 
+					function(sk, ip)
+						if (ip == nil) then 
+							print("DNS failed!") 
+							-- nach 5 Sekunden naechster Versuch...
+							tmr.alarm(1, 5000, 1, function() read_ntp() end)
+						else
+        					sntp.sync(ip,
+            							function(sec,usec,server)
+                							print('sync', sec, usec, server)
+                							rtctime.set(sec, usec)
+											-- in einer Stunde wieder synchronisieren
+											tmr.alarm(1, ntp_refresh, 1, function() read_ntp() end)
+            							end,
+            							function()
+											print('NTP sync failed!')
+											-- nach 5 Sekunden neachster Versuch
+											tmr.alarm(1, 5000, 1, function() read_ntp() end)
+            							end)
+        				end
+    				end) 
 end
 
 
@@ -219,19 +228,9 @@ end
 
 -- aktuelle Zeit von einem ntp-Server holen und jede Stunde aktualisieren
 read_ntp()
-tmr.alarm(1, 3600000, 1, function() read_ntp() end)
 
 -- mit MQTT-Client definieren
 m = mqtt.Client(client_name, 120)
 
 -- mit MQTT-Broker verbinden
 mqtt_connect()
-
--- Messwerte via Request auf Port 8266 ausliefern
-srv=net.createServer(net.TCP) 
-srv:listen(8266,function(conn) 
-        read_values()
-        local buf="ts="..ts.."|stat="..stat.."|temp="..temp.."|hum="..hum.."|heap="..node.heap()
-        conn:send(buf)
-        conn:close()
-		end)

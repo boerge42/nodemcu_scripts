@@ -84,7 +84,8 @@ Daten via MQTT empfangen.
 Kommandozeile via MQTT-Protokoll
 
 ## ws2812_clock
-Darstellung einer Uhr auf einem Ring mit 60 WS2812-LEDs.
+Darstellung einer Uhr auf einem Ring mit 60 WS2812-LEDs (incl. Ausschalten 
+der Anzeige bei Dunkelheit).
 
 ---------  
 Have fun!

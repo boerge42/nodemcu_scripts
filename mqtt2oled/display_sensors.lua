@@ -39,16 +39,19 @@ function M.display(d)
 		disp:firstPage()
 		repeat
 			disp:setFont(u8g.font_6x10)
-			-- eventuell Alias ausgeben
-			if d.nodenames[d.nodes[d.sensors_idx]]~= nil then
-				disp:drawStr(0, 7, d.nodenames[d.nodes[d.sensors_idx]])
+			-- node_alias vorhanden?
+			if (d.sensors[d.nodes[d.sensors_idx]]["node_alias"]~= nil) and
+			   (d.sensors[d.nodes[d.sensors_idx]]["node_alias"]~= "")
+			then
+				disp:drawStr(0, 7, d.sensors[d.nodes[d.sensors_idx]]["node_alias"])
 			else
 				disp:drawStr(0, 7, d.nodes[d.sensors_idx])		
 			end
-			-- disp:drawStr(110, 7, d.sensors[d.nodes[d.sensors_idx]]["status"])
+			-- Status des Nodes
 			if d.sensor_status[d.nodes[d.sensors_idx]] ~= nil then
 				disp:drawStr(110, 7, d.sensor_status[d.nodes[d.sensors_idx]])
 			end
+			-- ...der Rest...
 			disp:drawStr(0, 17, d.sensors[d.nodes[d.sensors_idx]]["readable_ts"])
 			disp:setFont(u8g.font_9x15)
 			disp:drawStr(35, 38, d.sensors[d.nodes[d.sensors_idx]]["temperature"]..string.char(0xB0).."C")

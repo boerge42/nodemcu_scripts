@@ -40,7 +40,7 @@ function M.display(d)
 	local utc = rtctime.get()
     local tm  = rtctime.epoch2cal(utc)
     -- Sommerzeit?
-    if dst == true and is_summertime(tm) then
+    if d.dst == true and is_summertime(tm) then
     	utc = utc + 3600
     end
     -- Zeitzone noch einrechnen

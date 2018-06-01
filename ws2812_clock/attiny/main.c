@@ -3,15 +3,17 @@
                   ================
                   Uwe Berger; 2018
                
-Ausgabe einer Impuls-Signals, dessen Frequenz abhaengig von der 
-Helligkeit ist, auf PB1 eines ATtiny45. Die Helligkeit wird mit 
-einem Fotowiderstand (LDR) via ADC gemessen.
+Ausgabe einer Impuls-Signals auf PB1 eines ATtiny45, dessen Frequenz 
+abhaengig von der Helligkeit ist. Die Helligkeit wird mit einem Foto-
+widerstand (LDR) via ADC ermittelt.
 
 Fotowiderstand
 --------------
 -verschaltet als Spannungsteiler an ADC2
 	Vcc --> 10kOhm --> ADC2-Input --> LDR --> GND
 
+...ansonsten kein Hexenwerk, sondern einfach nur pragmatisch und ange-
+passt auf den eigentlichen Einsatzfall (oder umgekehrt? ;-))
 
 
 ---------

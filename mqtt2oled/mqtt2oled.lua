@@ -4,10 +4,6 @@
 --                    Uwe Berger; 2017
 --
 -- * alle Stunde RTC via NTP synchronisieren
--- * Telnet-Server an Port 8266 bereitstellen, welcher
---   "ts=UNIX-Zeit|stat=Status|temp=Temperatur|Hum=Luftfeuchtigkeit|
---   heap=freier dyn. Speicher"
---   sendet und dann die Verbindung beendet
 -- * Nachrichten an einen MQTT-Broker senden:
 --   ** ohne Anmeldung und unverschluesselt 
 --   ** Sensorstatus via Topic sensors/<wifi.sta.gethostname()>/status
@@ -38,7 +34,22 @@
 --      *** Wettervorhersage
 --      *** Systeminformationen
 --      auf einem OLED, umschaltbar ueber zwei Taster
+-- * saemtliche Ausgaben erfolgen auf einem OLED, welches via I2C 
+--   angeschlossen ist
+-- * das Umschalten zwischen den einzelnen Anzeige-Modi erfolgt mit zwei 
+--   angeschlossenen (entprellten) Taster
+-- * ein Screensaver (leeres Display) wird nach 60s einschalten, welcher
+--   durch einen Tastendruck aufgehoben und neu initialisert wird
 --
+--
+-- belegte Timer:
+-- --------------
+-- 0 --> Tastenentprellung
+-- 1 --> zyklische NTP-Aktualisierung
+-- 2 --> zyklische Display-Aktualisierung
+-- 3 --> zyklisches MQTT-Publish
+-- 4 --> Einschalten Screensaver
+-- 
 -- ---------
 -- Have fun!
 --
@@ -48,9 +59,11 @@
 local mqtt_broker = "10.1.1.82"
 local mqtt_port = 1883
 
-local client_name = wifi.sta.gethostname()
+--client_name = wifi.sta.gethostname()
+client_name = "esp8266-"..node.chipid()
 local mqtt_topic = "sensors/"..client_name.."/"
 local node_type = "dht22"
+local node_alias = "OLED-Device"
 
 -- I2C fuer OLED
 local pin_sda = 2
@@ -61,22 +74,21 @@ local dht_pin = 1
 local ts, stat, temp, hum = 0, -1, "xx", "xx"
 local old_temp, old_hum = 0, 0
 
-local mode = 1
+mode 		= 1
+mode_save 	= 1
 
 -- MQTT-Daten plus ein paar Steuervariable...
 values={
 	nodes    = {},
 	sensors  = {},
 	sensor_status  = {},
-	nodenames = {},
 	weather  = {},
 	forecast = {},
 	sensors_idx = 1,
 	forecast_idx = 1,
-	tz_offset = 1
+	tz_offset = 1,
+	dst = true
 }
-
-
 
 -- **********************************************************************
 -- entsprechenden Bildschirm laden und zyklisch ausfuehren
@@ -86,7 +98,9 @@ local function switch_display()
 	oled = nil
 	collectgarbage()
 	-- neues Display laden
-	if mode==1 then 
+	if mode==0 then 
+		oled=require "display_screensaver"
+	elseif mode==1 then 
 		oled=require "display_clock"
 	elseif mode==2 then 
 		oled=require "display_sensors"
@@ -109,7 +123,7 @@ end
 -- Quelle: 
 -- https://github.com/maciejmiklas/NodeMCUUtils/blob/master/dateformatEurope.lua
 -- ts --> UTC-Zeit (...aus rtctime.get())
-local function is_summertime(ts)
+function is_summertime(ts)
 	if ts.mon < 3 or ts.mon > 10 then 
 		return false 
 	end
@@ -222,16 +236,22 @@ end
 
 -- **********************************************************************
 local function read_ntp()
-    net.dns.resolve("de.pool.ntp.org", function(sk, ip)
-    if (ip == nil) then print("DNS failed!") else
-        sntp.sync(ip,
-            function(sec,usec,server)
-                print('sync', sec, usec, server)
-                rtctime.set(sec, usec)
-            end,
-            function()
-                print('NTP sync failed!')
-            end)
+    net.dns.resolve("de.pool.ntp.org", 
+    	function(sk, ip)
+    	if (ip == nil) then 
+    		print("DNS failed!") 
+    		tmr.alarm(1, 5000, 1, function() read_ntp() end)
+    	else
+        	sntp.sync(ip,
+            	function(sec,usec,server)
+                	print('sync', sec, usec, server)
+                	rtctime.set(sec, usec)
+                	tmr.alarm(1, 3600000, 1, function() read_ntp() end)
+            	end,
+            	function()
+               		print('NTP sync failed!')
+		    		tmr.alarm(1, 5000, 1, function() read_ntp() end)
+            	end)
         end
     end) 
 end
@@ -239,12 +259,12 @@ end
 -- **********************************************************************
 -- Messwerte via MQTT publizieren
 local function publish_values()
-	m:publish(mqtt_topic.."heap", node.heap(), 0, 1)
+	--m:publish(mqtt_topic.."heap", node.heap(), 0, 1)
 	m:publish(mqtt_topic.."status", "on", 0, 1)
-	m:publish(mqtt_topic.."temperature", temp, 0, 1)
-	m:publish(mqtt_topic.."humidity", hum, 0, 1)
-	m:publish(mqtt_topic.."unixtime", ts, 0, 1)
-	m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(values.tz_offset, true), 0, 1)
+	--m:publish(mqtt_topic.."temperature", temp, 0, 1)
+	--m:publish(mqtt_topic.."humidity", hum, 0, 1)
+	--m:publish(mqtt_topic.."unixtime", ts, 0, 1)
+	--m:publish(mqtt_topic.."readable_timestamp", get_readable_local_datetime(values.tz_offset, values.dst), 0, 1)
 	-- Lua-Liste
 	local l="{"
 	l=l.."heap=\""..node.heap()
@@ -253,8 +273,9 @@ local function publish_values()
 	l=l.."\",humidity=\""..hum
 	l=l.."\",unixtime=\""..ts
 	l=l.."\",node_name=\""..client_name
+	l=l.."\",node_alias=\""..node_alias
 	l=l.."\",node_type=\""..node_type
-	l=l.."\",readable_ts=\""..get_readable_local_datetime(values.tz_offset, true)
+	l=l.."\",readable_ts=\""..get_readable_local_datetime(values.tz_offset, values.dst)
 	l=l.."\"}"
 	m:publish(mqtt_topic.."lua_list", l, 0, 1)
 	-- JSON
@@ -264,8 +285,9 @@ local function publish_values()
 	l=l.."\",\"humidity\":\""..hum
 	l=l.."\",\"unixtime\":\""..ts
 	l=l.."\",\"node_name\":\""..client_name
+	l=l.."\",\"node_alias\":\""..node_alias
 	l=l.."\",\"node_type\":\""..node_type
-	l=l.."\",\"readable_ts\":\""..get_readable_local_datetime(values.tz_offset, true)
+	l=l.."\",\"readable_ts\":\""..get_readable_local_datetime(values.tz_offset, values.dst)
 	l=l.."\"}"
 	m:publish(mqtt_topic.."json", l, 0, 1)
 end
@@ -277,7 +299,20 @@ function is_mode(m)
 end
 
 -- **********************************************************************
-local function switch6up()
+function set_timer_screensaver()
+	-- ...Screensaver-Timer stoppen...
+	tmr.unregister(4)
+	-- ...und wieder auf 60s stellen...
+	tmr.alarm(4, 60000, tmr.ALARM_SINGLE, 
+				function()
+					mode_save = mode
+					mode=0
+					switch_display()
+				end)
+end
+
+-- **********************************************************************
+function switch6up()
 	gpio.trig(6, "none")
 	tmr.alarm(0, 30, tmr.ALARM_SINGLE, 
 				function()
@@ -300,18 +335,24 @@ function switch6down()
 	tmr.alarm(0, 30, tmr.ALARM_SINGLE, 
 				function()
 					gpio.trig(6, "up", switch6up)
-					if is_mode("display_sensors") then
-						values.sensors_idx = values.sensors_idx + 1
-						if values.sensors_idx > #values.nodes then 
-							values.sensors_idx = 1 
+					if is_mode("display_screensaver") then
+						mode=mode_save
+						switch_display()
+						set_timer_screensaver()					
+					else
+						if is_mode("display_sensors") then
+							values.sensors_idx = values.sensors_idx + 1
+							if values.sensors_idx > #values.nodes then 
+								values.sensors_idx = 1 
+							end
+							oled.display(values)
+						elseif is_mode("display_forecast") then
+							values.forecast_idx = values.forecast_idx + 1
+							if values.forecast_idx > #values.forecast.fc then 
+								values.forecast_idx = 1 
+							end
+							oled.display(values)
 						end
-						oled.display(values)
-					elseif is_mode("display_forecast") then
-						values.forecast_idx = values.forecast_idx + 1
-						if values.forecast_idx > #values.forecast.fc then 
-							values.forecast_idx = 1 
-						end
-						oled.display(values)
 					end
 				end)
 end
@@ -322,9 +363,14 @@ function switch7down()
 	tmr.alarm(0, 30, tmr.ALARM_SINGLE, 
 				function()
 					gpio.trig(7, "up", switch7up)
-					mode=mode+1
-					if mode>5 then mode=1 end
+					if is_mode("display_screensaver") then
+						mode=mode_save
+					else 
+						mode=mode+1
+						if mode>5 then mode=1 end
+					end
 					switch_display()
+					set_timer_screensaver()
 				end)
 end
 
@@ -337,7 +383,6 @@ node.setcpufreq(node.CPU160MHZ)
 
 -- aktuelle Zeit von einem ntp-Server holen und jede Stunde aktualisieren
 read_ntp()
-tmr.alarm(2, 3600000, 1, function() read_ntp() end)
 
 
 -- Taster konfigurieren
@@ -350,14 +395,11 @@ gpio.trig(7, "down", switch7down)
 i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
 disp = u8g.ssd1306_128x64_i2c(0x3c)
 	
--- ggf. Datei nodenames mit Alias-Name einlesen
-function namealias(name, alias)	values.nodenames[name] = alias end
-if file.exists("nodenames") then
-	dofile("nodenames")
-end
-
 -- initialer Screen
 switch_display()
+
+-- Screensaver initialisieren
+set_timer_screensaver()
 
 -- mit MQTT-Client definieren
 m = mqtt.Client(client_name, 120)
@@ -385,7 +427,7 @@ m:connect(mqtt_broker, mqtt_port, 0, 0,
 							["weatherforecast/lua_list"]=0
 						})
 			m:publish(mqtt_topic.."status", "on", 0, 1)
-			tmr.alarm(3,60000,1, function() 
+			tmr.alarm(3,300000,1, function() 
 									read_values()
 									publish_values()
 								 end) 
@@ -395,12 +437,3 @@ m:connect(mqtt_broker, mqtt_port, 0, 0,
 			print("MQTT-Connect failed: "..reason)
 		end
 )	
-
--- Messwerte via Request auf Port 8266 ausliefern
-srv=net.createServer(net.TCP) 
-srv:listen(8266,function(conn) 
-        read_values()
-        local buf="ts="..ts.."|stat="..stat.."|temp="..temp.."|hum="..hum.."|heap="..node.heap()
-        conn:send(buf)
-        conn:close()
-		end)
