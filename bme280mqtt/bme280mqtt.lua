@@ -248,3 +248,6 @@ m = mqtt.Client(client_name, 120)
 
 -- mit MQTT-Broker verbinden
 mqtt_connect()
+
+-- einmal BME280-Sensor auslesen und Werte ausgeben...
+print(read_bme280())

@@ -87,5 +87,10 @@ Kommandozeile via MQTT-Protokoll
 Darstellung einer Uhr auf einem Ring mit 60 WS2812-LEDs (incl. Ausschalten 
 der Anzeige bei Dunkelheit).
 
+## z80_wifi
+Gegenstueck zu [Z80-Clock](https://github.com/boerge42/Z80-MBC2-Programme/tree/master/turbo_pascal/7s_clock), 
+welches ein paar Daten von dem Board empfaengt und diese dann in eine MQTT-Nachricht verpackt/versendet.
+
+
 ---------  
 Have fun!
